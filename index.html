@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    
+    <!-- ====== SEO & SOCIAL META TAGS ====== -->
+    <title>✈️ Airline Manager - Tycoon Game</title>
+    <meta name="description" content="Airline Manager - Build your airline empire! Real-time flights, dynamic economy, airport upgrades, achievements. Play in browser, PWA ready.">
+    <meta name="keywords" content="airline manager, tycoon game, browser game, simulation, management game, idle game, javascript game">
+    <meta name="author" content="Your Name">
+    <meta name="theme-color" content="#0c4a6e">
+    
+    <!-- Open Graph (for social sharing) -->
+    <meta property="og:title" content="✈️ Airline Manager - Tycoon Game">
+    <meta property="og:description" content="Build and manage your own airline empire. Real-time flights, dynamic economy, unlockable regions!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nikolagogov.github.io/airline-manager-tycoon/">
+    <meta property="og:image" content="https://nikolagogov.github.io/airline-manager-tycoon/assets/icons/icon-512.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="✈️ Airline Manager - Tycoon Game">
+    <meta name="twitter:description" content="Build your airline empire! Real-time flights, dynamic economy.">
+    <meta name="twitter:image" content="https://nikolagogov.github.io/airline-manager-tycoon/assets/icons/icon-512.png">
+    
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- ====== STYLES ====== -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .app {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .sidebar {
+            background: white;
+            border-radius: 28px;
+            padding: 16px 12px;
+            width: 280px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            height: fit-content;
+        }
+        .logo { text-align: center; margin-bottom: 16px; border-bottom: 2px solid #f59e0b; padding-bottom: 10px; }
+        .logo h2 { color: #0c4a6e; font-size: 1.3rem; }
+        .nav-btn {
+            width: 100%;
+            background: #f8fafc;
+            border: none;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        .nav-btn:hover { background: #f1f5f9; transform: translateX(4px); }
+        .nav-btn.active { background: #f59e0b; color: white; border-color: #f59e0b; }
+        .stats-mini { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+        .stat-mini { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        .stat-mini-value { font-weight: bold; color: #f59e0b; }
+        .indicator-box {
+            background: #fef3c7; border-left: 3px solid #f59e0b; 
+            padding: 8px; border-radius: 12px; margin-top: 10px; font-size: 11px;
+        }
+        .progress-bar { background: #e2e8f0; border-radius: 20px; height: 8px; margin-top: 6px; overflow: hidden; }
+        .progress-fill { background: #f59e0b; width: 0%; height: 100%; border-radius: 20px; transition: width 0.3s; }
+        .main-content { flex: 1; min-width: 280px; background: white; border-radius: 28px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .screen { display: none; animation: fadeIn 0.3s; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { color: #0c4a6e; margin-bottom: 16px; border-left: 4px solid #f59e0b; padding-left: 12px; font-size: 1.3rem; }
+        h3 { color: #0c4a6e; margin: 12px 0 8px 0; font-size: 1rem; }
+        #map { height: 400px; width: 100%; border-radius: 20px; margin-bottom: 12px; z-index: 1; }
+        .map-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+        .aircraft-list, .routes-list { max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .aircraft-card, .route-item, .achievement-card, .loan-card {
+            background: #f8fafc; border-radius: 18px; padding: 12px 14px;
+            border: 1px solid #e2e8f0; display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 8px;
+        }
+        .aircraft-card.selected { border: 2px solid #f59e0b; background: #fffbeb; }
+        .status-busy { background: #ef4444; color: white; border-radius: 20px; padding: 2px 10px; font-size: 11px; }
+        .status-idle { background: #10b981; color: white; border-radius: 20px; padding: 2px 10px; font-size: 11px; }
+        .status-maintenance { background: #8b5cf6; color: white; border-radius: 20px; padding: 2px 10px; font-size: 11px; }
+        .route-timer { font-family: monospace; font-weight: bold; color: #f59e0b; }
+        .btn {
+            background: linear-gradient(95deg, #f59e0b, #d97706);
+            border: none; padding: 8px 16px; border-radius: 40px;
+            cursor: pointer; font-weight: bold; color: white;
+            transition: transform 0.1s;
+            font-size: 13px;
+        }
+        .btn:hover { transform: scale(1.02); filter: brightness(1.05); }
+        .btn-danger { background: linear-gradient(95deg, #ef4444, #dc2626); }
+        .btn-success { background: linear-gradient(95deg, #10b981, #059669); }
+        .btn-secondary { background: linear-gradient(95deg, #64748b, #475569); }
+        select, input { background: #f8fafc; padding: 8px 12px; border-radius: 40px; border: 1px solid #cbd5e1; font-size: 13px; }
+        .flex-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: #1e293b;
+            color: #f59e0b; padding: 10px 20px; border-radius: 60px;
+            animation: slideRight 0.3s, fadeOut 3s 2s forwards; z-index: 2000;
+            font-size: 13px;
+        }
+        .toast.error { background: #7f1a1a; border-left: 4px solid #ef4444; color: #fecaca; }
+        @keyframes slideRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        .gold-flash { animation: goldFlash 0.4s; }
+        @keyframes goldFlash { 50% { text-shadow: 0 0 20px #f59e0b; transform: scale(1.05); } }
+        .dialog {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background: white;
+            border-radius: 28px; padding: 20px; z-index: 3000;
+            max-width: 400px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .dialog h3 { color: #0c4a6e; margin-bottom: 12px; }
+        .event-box {
+            background: #fff7ed; border-left: 4px solid #f59e0b;
+            padding: 8px; border-radius: 16px; margin-top: 10px;
+        }
+        .event-buttons { display: flex; gap: 8px; margin-top: 8px; justify-content: center; }
+        .profit-preview { margin-top: 10px; padding: 8px; background: #f1f5f9; border-radius: 20px; font-weight: bold; text-align: center; font-size: 12px; }
+        .how-to-play { background: #f1f5f9; border-radius: 16px; padding: 12px; margin-top: 16px; font-size: 12px; }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-box {
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-box .value { font-size: 20px; font-weight: bold; color: #f59e0b; }
+        .stat-box .label { font-size: 10px; color: #64748b; }
+        .route-rank { display: flex; justify-content: space-between; padding: 6px 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+        .rank-profit { font-weight: bold; color: #10b981; }
+        .chart-bar { background: #e2e8f0; border-radius: 10px; height: 16px; overflow: hidden; margin: 4px 0; }
+        .chart-fill { background: #f59e0b; height: 100%; width: 0%; border-radius: 10px; }
+        .achievement-locked { opacity: 0.5; filter: grayscale(0.3); }
+        .filter-bar { margin-bottom: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .filter-select { padding: 5px 10px; border-radius: 20px; font-size: 12px; }
+        .github-link {
+            text-align: center;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 11px;
+            color: #64748b;
+        }
+        .github-link a { color: #0c4a6e; text-decoration: none; }
+        .github-link a:hover { text-decoration: underline; }
+        @media (max-width: 700px) {
+            .sidebar { width: 100%; }
+            .nav-btn { padding: 8px 10px; }
+            .btn { padding: 6px 12px; font-size: 12px; }
+            h2 { font-size: 1.1rem; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<div class="app">
+    <div class="sidebar">
+        <div class="logo"><h2>✈️ AIRLINE MGR</h2><p style="font-size:10px;">Complete Edition</p></div>
+        <button class="nav-btn" data-screen="overview">📊 Overview</button>
+        <button class="nav-btn" data-screen="fleet">✈️ Fleet</button>
+        <button class="nav-btn" data-screen="map">🗺️ Route Map</button>
+        <button class="nav-btn" data-screen="routes">🛣️ Routes</button>
+        <button class="nav-btn" data-screen="stats">📈 Statistics</button>
+        <button class="nav-btn" data-screen="achievements">🏆 Achievements</button>
+        <button class="nav-btn" data-screen="loans">💰 Loans</button>
+        <div class="stats-mini">
+            <div class="stat-mini"><span>💰 Cash</span><span id="miniMoney" class="stat-mini-value">€0</span></div>
+            <div class="stat-mini"><span>✈️ Aircraft</span><span id="miniPlanes" class="stat-mini-value">0</span></div>
+            <div class="stat-mini"><span>🛣️ Active</span><span id="miniRoutes" class="stat-mini-value">0</span></div>
+            <div class="stat-mini"><span>⛽ Fuel</span><span id="miniFuel" class="stat-mini-value">€0.00</span></div>
+        </div>
+        <div id="levelIndicator" class="indicator-box">
+            🏢 Level <span id="companyLevel">1</span>
+            <div class="progress-bar"><div class="progress-fill" id="levelProgress" style="width:0%"></div></div>
+            <span id="nextLevelReq">€50,000</span> to next
+        </div>
+        <div id="loanIndicator" class="indicator-box" style="display:none;">💰 Active Loan<br>Remaining: €<span id="loanRemaining">0</span><br>Repayment: 50%</div>
+        <div id="seasonIndicator" class="indicator-box">🌸 Season: <span id="seasonName">Spring</span></div>
+        <button class="nav-btn" id="buyQuickBtn">🛒 BUY AIRCRAFT</button>
+        <div id="eventPanel" class="event-box" style="display:none;"></div>
+        <div class="github-link">
+            ⭐ <a href="https://github.com/nikolagogov/airline-manager-tycoon" target="_blank">Star on GitHub</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div id="screen-overview" class="screen">
+            <h2>📊 OVERVIEW</h2>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:16px;">
+                <div style="background:#f8fafc; border-radius:18px; padding:12px; text-align:center;"><div>💰</div><div id="ovMoney" style="font-size:22px; font-weight:bold; color:#f59e0b;">€0</div><div>Cash</div></div>
+                <div style="background:#f8fafc; border-radius:18px; padding:12px; text-align:center;"><div>✈️</div><div id="ovPlanes" style="font-size:22px; font-weight:bold; color:#f59e0b;">0</div><div>Aircraft</div></div>
+                <div style="background:#f8fafc; border-radius:18px; padding:12px; text-align:center;"><div>🛣️</div><div id="ovRoutes" style="font-size:22px; font-weight:bold; color:#f59e0b;">0</div><div>Routes</div></div>
+                <div style="background:#f8fafc; border-radius:18px; padding:12px; text-align:center;"><div>📈</div><div id="ovRevenue" style="font-size:22px; font-weight:bold; color:#f59e0b;">€0</div><div>Revenue</div></div>
+            </div>
+            <div style="background:#f8fafc; border-radius:20px; padding:16px;">
+                <h3>🎯 Quick Actions</h3>
+                <div class="flex-row">
+                    <button class="btn btn-success" onclick="switchScreen('fleet')">✈️ Fleet</button>
+                    <button class="btn" onclick="switchScreen('map')">🗺️ Map</button>
+                    <button class="btn" onclick="openBuyMenu()">🛒 Buy</button>
+                    <button class="btn btn-secondary" onclick="switchScreen('loans')">💰 Loan</button>
+                    <button class="btn btn-secondary" onclick="exportGame()">📤 Export</button>
+                    <button class="btn btn-secondary" onclick="newGame()">🆕 New Game</button>
+                </div>
+            </div>
+            <div class="how-to-play">
+                <strong>📖 How to Play</strong><br>
+                1️⃣ Buy your first aircraft (Cessna 208)<br>
+                2️⃣ Open Route Map → tap two cities → select aircraft → CREATE<br>
+                3️⃣ Go to Routes → START flight → wait for timer<br>
+                4️⃣ Earn money → buy bigger aircraft → upgrade airports<br>
+                5️⃣ Reach Level 5 to unlock Asia/Africa destinations!<br>
+                ⭐ Set a HUB (+20% demand) from the Map screen
+            </div>
+            <div style="margin-top:14px;"><h3>🛣️ Recent Routes</h3><div id="recentRoutesList" style="max-height:160px; overflow-y:auto;"></div></div>
+        </div>
+        
+        <div id="screen-fleet" class="screen">
+            <h2>✈️ YOUR FLEET</h2>
+            <div class="filter-bar">
+                <span>Sort:</span>
+                <select id="fleetSort" class="filter-select" onchange="renderAircrafts()">
+                    <option value="name">Name</option>
+                    <option value="price">Price (low)</option>
+                    <option value="priceDesc">Price (high)</option>
+                    <option value="capacity">Capacity</option>
+                </select>
+                <span>Filter:</span>
+                <select id="fleetFilter" class="filter-select" onchange="renderAircrafts()">
+                    <option value="all">All</option>
+                    <option value="light">Light</option>
+                    <option value="medium">Medium</option>
+                    <option value="heavy">Heavy</option>
+                </select>
+            </div>
+            <div id="aircraftListScreen" class="aircraft-list"></div>
+            <div class="flex-row mt-15"><button class="btn btn-success" onclick="openBuyMenu()">🛒 Buy</button><button class="btn btn-danger" onclick="sellSelectedAircraft()">💰 Sell</button></div>
+        </div>
+        
+        <div id="screen-map" class="screen">
+            <h2>🗺️ CREATE ROUTE</h2>
+            <div id="map"></div>
+            <div id="selectionInfo" style="background:#f1f5f9; padding:10px; border-radius:16px; margin:10px 0; font-size:12px;">✨ Tap a city → START, then another → DESTINATION</div>
+            <div class="map-controls">
+                <select id="aircraftSelect" style="flex:2;"></select>
+                <div style="display:flex; gap:6px;"><label>Price: <input type="range" id="priceSlider" min="0.5" max="2.0" step="0.01" value="1.0" style="width:90px;"></label><span id="priceMultLabel">1.00x</span></div>
+                <button class="btn btn-success" id="createRouteBtnMap">CREATE</button>
+                <button class="btn" id="clearMapBtn">CLEAR</button>
+            </div>
+            <div id="profitPreview" class="profit-preview">💶 Expected profit: --</div>
+            <div style="margin-top:10px;"><button class="btn btn-secondary" id="setHubBtn" disabled>⭐ Set Hub (from START)</button></div>
+        </div>
+        
+        <div id="screen-routes" class="screen">
+            <h2>🛣️ ACTIVE ROUTES</h2>
+            <div class="flex-row" style="margin-bottom:10px;"><button class="btn btn-success" id="autoStartBtn">🚀 AUTO-START ALL</button></div>
+            <div id="routesListScreen" class="routes-list"></div>
+        </div>
+        
+        <div id="screen-stats" class="screen">
+            <h2>📈 STATISTICS</h2>
+            <div class="stat-grid">
+                <div class="stat-box"><div class="value" id="statTotalFlights">0</div><div class="label">Flights</div></div>
+                <div class="stat-box"><div class="value" id="statTotalDistance">0 km</div><div class="label">Distance</div></div>
+                <div class="stat-box"><div class="value" id="statAvgProfit">€0</div><div class="label">Avg Profit</div></div>
+                <div class="stat-box"><div class="value" id="statFleetEfficiency">0%</div><div class="label">Efficiency</div></div>
+                <div class="stat-box"><div class="value" id="statBestRoute">-</div><div class="label">Best Route</div></div>
+                <div class="stat-box"><div class="value" id="statBestProfit">€0</div><div class="label">Best Profit</div></div>
+            </div>
+            <h3>🏆 Top 5 Routes</h3>
+            <div id="topRoutesList" style="background:#f8fafc; border-radius:18px; padding:12px;"></div>
+            <h3>📊 Profit Distribution</h3>
+            <div id="profitChart" style="background:#f8fafc; border-radius:18px; padding:12px;"></div>
+        </div>
+        
+        <div id="screen-achievements" class="screen"><h2>🏆 ACHIEVEMENTS</h2><div id="achievementsList" style="display:flex; flex-direction:column; gap:10px;"></div></div>
+        
+        <div id="screen-loans" class="screen">
+            <h2>💰 LOANS</h2>
+            <div id="activeLoanDisplay" style="background:#fef3c7; border-radius:18px; padding:12px; margin-bottom:14px; display:none;"><strong>Active Loan:</strong> €<span id="activeLoanRemaining">0</span><br>Repayment: 50% of profits</div>
+            <div id="availableLoansList" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- DIALOGS -->
+<div id="buyMenu" class="dialog"><h3>🛒 PURCHASE AIRCRAFT</h3><div id="marketList" style="max-height:350px; overflow-y:auto;"></div><button class="btn" onclick="closeBuyMenu()">CLOSE</button></div>
+<div id="confirmDialog" class="dialog"><h3>⚠️ Confirm</h3><p id="confirmMessage">Are you sure?</p><div class="flex-row" style="justify-content: center; gap: 12px; margin-top: 16px;"><button class="btn" id="confirmNoBtn">Cancel</button><button class="btn btn-danger" id="confirmYesBtn">Yes</button></div></div>
+<div id="bailoutDialog" class="dialog"><h3>⚠️ BANKRUPTCY</h3><p id="bailoutMessage"></p><button class="btn btn-success" id="bailoutBtn">Accept Loan (€25,000)</button></div>
+<div id="upgradeCityDialog" class="dialog"><h3>🏗️ UPGRADE AIRPORT</h3><p id="upgradeCityMessage"></p><div class="flex-row" style="justify-content: center; gap: 12px; margin-top: 16px;"><button class="btn" id="upgradeCityCancel">Cancel</button><button class="btn btn-success" id="upgradeCityConfirm">Upgrade</button></div></div>
+<div id="maintenanceDialog" class="dialog"><h3>🔧 MAINTENANCE</h3><p id="maintenanceMessage"></p><div class="flex-row" style="justify-content: center; gap: 12px; margin-top: 16px;"><button class="btn btn-danger" id="maintenancePayBtn">Pay</button><button class="btn" id="maintenanceWaitBtn">Wait 30s</button></div></div>
+<div id="importDialog" class="dialog"><h3>📥 IMPORT SAVE</h3><textarea id="importData" rows="4" style="width:100%; padding:8px; border-radius:12px;"></textarea><div class="flex-row" style="justify-content: center; gap: 12px; margin-top: 16px;"><button class="btn" id="importCancelBtn">Cancel</button><button class="btn btn-success" id="importConfirmBtn">Import</button></div></div>
+
+<script>
+    // ==================== AIRCRAFT DB ====================
+    const aircraftDB = [
+        { id:0, name:"Cessna 208", price:25000, capacity:12, range:1200, speed:340, image:"🛩️", fuelBurn:0.8, weightClass:"light", airportFee:150, baseTicketPrice:0.12 },
+        { id:1, name:"ATR 72-600", price:55000, capacity:68, range:1500, speed:510, image:"✈️", fuelBurn:3.2, weightClass:"medium", airportFee:400, baseTicketPrice:0.11 },
+        { id:2, name:"Embraer E175", price:85000, capacity:88, range:2200, speed:890, image:"✈️", fuelBurn:4.5, weightClass:"medium", airportFee:550, baseTicketPrice:0.10 },
+        { id:3, name:"Boeing 737-800", price:120000, capacity:162, range:5400, speed:840, image:"🛫", fuelBurn:12.0, weightClass:"heavy", airportFee:1200, baseTicketPrice:0.09 },
+        { id:4, name:"Airbus A320neo", price:150000, capacity:180, range:6500, speed:830, image:"🛫", fuelBurn:11.5, weightClass:"heavy", airportFee:1300, baseTicketPrice:0.09 },
+        { id:5, name:"Boeing 787-8", price:280000, capacity:242, range:13500, speed:900, image:"🛬", fuelBurn:18.0, weightClass:"heavy", airportFee:2000, baseTicketPrice:0.08 },
+        { id:6, name:"Airbus A380", price:500000, capacity:500, range:15000, speed:900, image:"🛬", fuelBurn:32.0, weightClass:"heavy", airportFee:3500, baseTicketPrice:0.08 }
+    ];
+
+    // ==================== CITIES ====================
+    let baseCities = [
+        { id:"SOF", name:"Sofia", lat:42.6977, lon:23.3219, maxSlots:3, level:1, upgradeCost:10000, upgradeTo:5, type:"mountain", region:"europe" },
+        { id:"LON", name:"London", lat:51.5074, lon:-0.1278, maxSlots:8, level:1, upgradeCost:20000, upgradeTo:12, type:"city", region:"europe" },
+        { id:"PAR", name:"Paris", lat:48.8566, lon:2.3522, maxSlots:7, level:1, upgradeCost:15000, upgradeTo:10, type:"city", region:"europe" },
+        { id:"BER", name:"Berlin", lat:52.5200, lon:13.4050, maxSlots:6, level:1, upgradeCost:12000, upgradeTo:9, type:"city", region:"europe" },
+        { id:"ROM", name:"Rome", lat:41.9028, lon:12.4964, maxSlots:5, level:1, upgradeCost:10000, upgradeTo:8, type:"beach", region:"europe" },
+        { id:"MAD", name:"Madrid", lat:40.4168, lon:-3.7038, maxSlots:5, level:1, upgradeCost:10000, upgradeTo:8, type:"city", region:"europe" },
+        { id:"ATH", name:"Athens", lat:37.9838, lon:23.7275, maxSlots:4, level:1, upgradeCost:8000, upgradeTo:6, type:"beach", region:"europe" },
+        { id:"IST", name:"Istanbul", lat:41.0082, lon:28.9784, maxSlots:6, level:1, upgradeCost:12000, upgradeTo:9, type:"beach", region:"europe" },
+        { id:"AMS", name:"Amsterdam", lat:52.3676, lon:4.9041, maxSlots:7, level:1, upgradeCost:15000, upgradeTo:10, type:"city", region:"europe" },
+        { id:"VIE", name:"Vienna", lat:48.2082, lon:16.3738, maxSlots:5, level:1, upgradeCost:10000, upgradeTo:7, type:"city", region:"europe" },
+        { id:"BCN", name:"Barcelona", lat:41.3851, lon:2.1734, maxSlots:6, level:1, upgradeCost:12000, upgradeTo:8, type:"beach", region:"europe" },
+        { id:"MUC", name:"Munich", lat:48.1351, lon:11.5820, maxSlots:5, level:1, upgradeCost:10000, upgradeTo:7, type:"mountain", region:"europe" }
+    ];
+    
+    let extraCities = [
+        { id:"DXB", name:"Dubai", lat:25.2048, lon:55.2708, maxSlots:10, level:1, upgradeCost:25000, upgradeTo:15, type:"city", region:"asia", minLevel:5 },
+        { id:"BKK", name:"Bangkok", lat:13.7367, lon:100.5231, maxSlots:8, level:1, upgradeCost:20000, upgradeTo:12, type:"beach", region:"asia", minLevel:5 },
+        { id:"SIN", name:"Singapore", lat:1.3521, lon:103.8198, maxSlots:9, level:1, upgradeCost:22000, upgradeTo:14, type:"city", region:"asia", minLevel:5 },
+        { id:"JNB", name:"Johannesburg", lat:-26.2041, lon:28.0473, maxSlots:6, level:1, upgradeCost:15000, upgradeTo:9, type:"city", region:"africa", minLevel:6 },
+        { id:"CAI", name:"Cairo", lat:30.0444, lon:31.2357, maxSlots:5, level:1, upgradeCost:12000, upgradeTo:8, type:"city", region:"africa", minLevel:5 }
+    ];
+    
+    let cities = [...baseCities];
+    let unlockToastTimeout = null;
+    let mapNeedsUpdate = false;
+
+    // ==================== SEASONS ====================
+    const seasons = [
+        { name: "🌸 Spring", months: [3,4,5], bonuses: { beach: 1.1, city: 1.0, mountain: 0.9 } },
+        { name: "☀️ Summer", months: [6,7,8], bonuses: { beach: 1.3, city: 1.1, mountain: 0.8 } },
+        { name: "🍂 Autumn", months: [9,10,11], bonuses: { beach: 0.9, city: 1.0, mountain: 1.1 } },
+        { name: "❄️ Winter", months: [12,1,2], bonuses: { beach: 0.7, city: 1.0, mountain: 1.3 } }
+    ];
+
+    // ==================== ACHIEVEMENTS ====================
+    const achievementsDB = [
+        { id:0, name:"First Flight", desc:"Complete first flight", reward:1000, condition:(s)=>s.totalFlights>=1 },
+        { id:1, name:"Sky Explorer", desc:"10 flights", reward:5000, condition:(s)=>s.totalFlights>=10 },
+        { id:2, name:"Veteran", desc:"50 flights", reward:25000, condition:(s)=>s.totalFlights>=50 },
+        { id:3, name:"First Aircraft", desc:"Buy first aircraft", reward:2000, condition:(s)=>s.aircrafts.length>=1 },
+        { id:4, name:"Fleet Commander", desc:"5 aircraft", reward:15000, condition:(s)=>s.aircrafts.length>=5 },
+        { id:5, name:"Millionaire", desc:"€1M revenue", reward:100000, condition:(s)=>s.totalRevenue>=1000000 },
+        { id:6, name:"Long Haul", desc:"2000km route", reward:8000, condition:(s)=>s.longHaulCompleted===true },
+        { id:7, name:"Airport Tycoon", desc:"Upgrade airport", reward:10000, condition:(s)=>s.anyUpgrade===true },
+        { id:8, name:"Hub Master", desc:"Set a hub", reward:15000, condition:(s)=>s.hubSet===true },
+        { id:9, name:"Global Explorer", desc:"Reach Level 5", reward:50000, condition:(s)=>s.companyLevel>=5 }
+    ];
+
+    // ==================== HELPERS ====================
+    function getDistance(a,b) { const R=6371, dLat=(b.lat-a.lat)*Math.PI/180, dLon=(b.lon-a.lon)*Math.PI/180, x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2; return Math.floor(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))); }
+    function getCitySlotUsage(cityId, routes) { return routes.filter(r => r.from === cityId || r.to === cityId).length; }
+    function getMaxSlots(cityId) { 
+        if (gameState.cityUpgrades && gameState.cityUpgrades[cityId]) {
+            return gameState.cityUpgrades[cityId].maxSlots;
+        }
+        const city = cities.find(c => c.id === cityId);
+        return city ? city.maxSlots : 3;
+    }
+    function getDemandKey(from, to) { return `${from}-${to}`; }
+    function getCurrentSeason() { const month = new Date().getMonth() + 1; for(let s of seasons) if(s.months.includes(month)) return s; return seasons[0]; }
+    function getSeasonBonus(cityId) { const city = cities.find(c => c.id === cityId); if(!city) return 1.0; const s = getCurrentSeason(); return s.bonuses[city.type] || 1.0; }
+    function getHubBonus(fromId) { if(gameState.hubCity && gameState.hubCity === fromId) return 1.2; return 1.0; }
+    function getMaintenanceCost(weightClass) { if(weightClass === 'heavy') return 8000; if(weightClass === 'medium') return 5000; return 3000; }
+    
+    function unlockNewCities() {
+        let added = false;
+        for(let ec of extraCities) {
+            if(gameState.companyLevel >= ec.minLevel && !cities.find(c => c.id === ec.id)) {
+                cities.push({...ec});
+                added = true;
+            }
+        }
+        if(added) {
+            mapNeedsUpdate = true;
+            if(unlockToastTimeout) clearTimeout(unlockToastTimeout);
+            unlockToastTimeout = setTimeout(() => {
+                showToast(`🌍 New destinations unlocked! Asia & Africa now available!`);
+            }, 100);
+        }
+    }
+    
+    function updateDemand(key) { if(!gameState.routeDemand[key]) gameState.routeDemand[key] = { demand: 1.0, lastUpdate: Date.now() }; let d = gameState.routeDemand[key].demand; d = Math.max(0.2, d - 0.04); gameState.routeDemand[key].demand = d; gameState.routeDemand[key].lastUpdate = Date.now(); saveGame(); }
+    function recoverDemands() { if(Object.keys(gameState.routeDemand).length === 0) return; const now = Date.now(); for(let k in gameState.routeDemand) { let entry = gameState.routeDemand[k]; let minutesPassed = (now - entry.lastUpdate) / 60000; if(minutesPassed > 0) { let newDemand = Math.min(1.0, entry.demand + minutesPassed * 0.01); entry.demand = newDemand; entry.lastUpdate = now; } } saveGame(); }
+    function calculateOccupancy(demand, priceMultiplier, capacity, cityId) { const capFactor = Math.min(1, 150 / capacity); const season = getSeasonBonus(cityId); const hub = getHubBonus(cityId); let occ = demand * (1.0 / priceMultiplier) * capFactor * season * hub; return Math.min(0.95, Math.max(0.15, occ)); }
+    function computeFlightProfit(route, demand, fuelPrice) { const dist = route.distance; const occ = calculateOccupancy(demand, route.priceMultiplier, route.capacity, route.from); const revPerPass = route.basePricePerKm * route.priceMultiplier * dist; const rev = revPerPass * route.capacity * occ; const fuel = dist * route.fuelBurn * fuelPrice; const fee = route.airportFee + dist * 0.05; return Math.floor(Math.max(0, rev - fuel - fee)); }
+    function updateCompanyLevel() { 
+        const req = [0, 50000, 200000, 500000, 1000000, 2000000, 4000000, 7000000, 10000000, 15000000]; 
+        let level = 1; 
+        for(let i=1; i<req.length; i++) { if(gameState.totalRevenue >= req[i]) level = i+1; else break; } 
+        if(gameState.companyLevel !== level) {
+            gameState.companyLevel = level; 
+            unlockNewCities();
+        }
+        document.getElementById('companyLevel').innerText = level; 
+        const nextReq = req[level] || req[req.length-1]; 
+        document.getElementById('nextLevelReq').innerHTML = `€${nextReq.toLocaleString()}`; 
+        const prevReq = req[level-1] || 0; 
+        const progress = ((gameState.totalRevenue - prevReq) / (nextReq - prevReq)) * 100; 
+        document.getElementById('levelProgress').style.width = `${Math.min(100, Math.max(0, progress))}%`; 
+    }
+
+    // ==================== GAME STATE ====================
+    let gameState = { 
+        money: 30000, 
+        totalRevenue: 0, 
+        aircrafts: [], 
+        routes: [], 
+        selectedAircraftUniqueId: null, 
+        fuelPrice: 1.80, 
+        routeDemand: {}, 
+        pendingEvent: null, 
+        discountPercent: 0, 
+        loanActive: false, 
+        loanRemaining: 0, 
+        totalFlights: 0, 
+        totalDistance: 0, 
+        routeStats: {}, 
+        achievements: [], 
+        longHaulCompleted: false, 
+        anyUpgrade: false, 
+        hubCity: null, 
+        hubSet: false, 
+        companyLevel: 1,
+        cityUpgrades: {}
+    };
+    let flightTimers = {}, map = null, markers = {}, selectedStart = null, selectedEnd = null, routePriceMultiplier = 1.0;
+    let demandRecoveryInterval = null, fuelFluctuationInterval = null, eventInterval = null, seasonInterval = null;
+    let confirmResolve = null, pendingUpgradeCity = null, pendingMaintenanceAircraft = null, maintenanceTimeout = null;
+
+    // ==================== UI FUNCTIONS ====================
+    function updateLoanUI() { const ind = document.getElementById('loanIndicator'); if(gameState.loanActive && gameState.loanRemaining > 0) { ind.style.display = 'block'; document.getElementById('loanRemaining').innerText = Math.floor(gameState.loanRemaining).toLocaleString(); } else ind.style.display = 'none'; const ad = document.getElementById('activeLoanDisplay'); if(ad) { if(gameState.loanActive && gameState.loanRemaining > 0) { ad.style.display = 'block'; document.getElementById('activeLoanRemaining').innerText = Math.floor(gameState.loanRemaining).toLocaleString(); } else ad.style.display = 'none'; } }
+    function updateSeasonUI() { document.getElementById('seasonName').innerText = getCurrentSeason().name; }
+    function applyLoanRepayment(profit) { if(!gameState.loanActive || gameState.loanRemaining <= 0) return profit; let repayment = Math.floor(profit * 0.5); if(repayment > gameState.loanRemaining) repayment = gameState.loanRemaining; gameState.loanRemaining -= repayment; if(gameState.loanRemaining <= 0) { gameState.loanActive = false; showToast(`🎉 Loan fully repaid!`); updateLoanUI(); } return profit - repayment; }
+    async function takeLoan(amount, repaymentAmount) { 
+        const confirmed = await showConfirm(`Take loan of €${amount.toLocaleString()}? Repay €${repaymentAmount.toLocaleString()}. 50% of profits.`); 
+        if(confirmed) { 
+            gameState.money += amount; 
+            gameState.loanActive = true; 
+            gameState.loanRemaining = repaymentAmount; 
+            saveGame(); 
+            refreshAll(); 
+            updateLoanUI(); 
+            showToast(`💶 Loan granted!`); 
+        } 
+    }
+    
+    function updateStatistics(route, profit) { gameState.totalFlights++; gameState.totalDistance += route.distance; if(route.distance > 2000 && !gameState.longHaulCompleted) { gameState.longHaulCompleted = true; checkAchievements(); } const key = getDemandKey(route.from, route.to); if(!gameState.routeStats) gameState.routeStats = {}; if(!gameState.routeStats[key]) gameState.routeStats[key] = { flights: 0, totalProfit: 0, distance: route.distance, fromName: route.fromName, toName: route.toName }; gameState.routeStats[key].flights++; gameState.routeStats[key].totalProfit += profit; saveGame(); checkAchievements(); updateCompanyLevel(); }
+    function checkAchievements() { let changed = false; for(let ach of achievementsDB) { if(!gameState.achievements.includes(ach.id) && ach.condition(gameState)) { gameState.achievements.push(ach.id); gameState.money += ach.reward; showToast(`🏆 ${ach.name}! +€${ach.reward.toLocaleString()}`); changed = true; } } if(changed) { saveGame(); refreshAll(); } }
+    function renderAchievements() { const c = document.getElementById('achievementsList'); if(!c) return; c.innerHTML = achievementsDB.map(ach => { const unlocked = gameState.achievements.includes(ach.id); return `<div class="achievement-card ${!unlocked ? 'achievement-locked' : ''}"><div><strong>${unlocked ? '🏆' : '🔒'} ${ach.name}</strong><div style="font-size:11px;">${ach.desc}</div><div>💰 +€${ach.reward.toLocaleString()}</div></div><div>${unlocked ? '✅' : '🔒'}</div></div>`; }).join(''); }
+    function renderLoans() { const c = document.getElementById('availableLoansList'); if(!c) return; const loans = [{ amount: 10000, repayment: 12000 }, { amount: 25000, repayment: 30000 }, { amount: 50000, repayment: 65000 }, { amount: 100000, repayment: 140000 }]; c.innerHTML = loans.map(loan => `<div class="loan-card"><div><strong>💰 €${loan.amount.toLocaleString()}</strong><div style="font-size:11px;">Repay: €${loan.repayment.toLocaleString()}<br>50% of profits</div></div><button class="btn btn-success" onclick="takeLoan(${loan.amount}, ${loan.repayment})">Take Loan</button></div>`).join(''); }
+
+    function saveGame() { localStorage.setItem('airlineManagerUltimate', JSON.stringify(gameState)); }
+    function exportGame() { const data = JSON.stringify(gameState); const blob = new Blob([data], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'airline_save.json'; a.click(); URL.revokeObjectURL(url); showToast('Game exported!'); }
+    function importGamePrompt() { document.getElementById('importDialog').style.display = 'block'; }
+    function importGame(data) { try { const loaded = JSON.parse(data); gameState = loaded; saveGame(); location.reload(); showToast('Game imported!'); } catch(e) { showToast('Invalid save!', true); } }
+    function newGame() { if(confirm('⚠️ Start a new game? All progress will be lost!')) { localStorage.removeItem('airlineManagerUltimate'); location.reload(); } }
+    
+    function loadGame() {
+        const saved = localStorage.getItem('airlineManagerUltimate');
+        if(saved) { 
+            try { 
+                const loaded = JSON.parse(saved); 
+                gameState = loaded; 
+                if(gameState.money===undefined) gameState.money=30000; 
+                if(!gameState.fuelPrice) gameState.fuelPrice=1.80; 
+                if(!gameState.routeDemand) gameState.routeDemand={}; 
+                if(!gameState.aircrafts) gameState.aircrafts=[]; 
+                if(gameState.discountPercent===undefined) gameState.discountPercent=0; 
+                if(gameState.loanActive===undefined) gameState.loanActive=false; 
+                if(gameState.loanRemaining===undefined) gameState.loanRemaining=0; 
+                if(gameState.totalFlights===undefined) gameState.totalFlights=0; 
+                if(gameState.totalDistance===undefined) gameState.totalDistance=0; 
+                if(!gameState.routeStats) gameState.routeStats={}; 
+                if(!gameState.achievements) gameState.achievements=[]; 
+                if(gameState.hubCity===undefined) gameState.hubCity=null; 
+                if(gameState.hubSet===undefined) gameState.hubSet=false; 
+                if(gameState.companyLevel===undefined) gameState.companyLevel=1;
+                if(!gameState.cityUpgrades) gameState.cityUpgrades={};
+                // Fix: Reset flightsCount for aircraft not in maintenance
+                if (gameState.aircrafts && gameState.aircrafts.length) {
+                    gameState.aircrafts.forEach(ac => {
+                        if (!ac.maintenance) ac.flightsCount = 0;
+                        if (ac.busy === undefined) ac.busy = false;
+                        if (ac.maintenance === undefined) ac.maintenance = false;
+                        if (ac.flightsCount === undefined) ac.flightsCount = 0;
+                    });
+                }
+                // Restore active flights - skip expired ones
+                gameState.routes.forEach(r => { 
+                    if(r.active && r.endTime > Date.now()) {
+                        startFlightTimer(r); 
+                    } else if(r.active && r.endTime <= Date.now()) {
+                        // Complete expired flights
+                        r.active = false;
+                        r.endTime = null;
+                        const ac = gameState.aircrafts.find(a => a.uniqueId === r.aircraftUniqueId);
+                        if(ac) ac.busy = false;
+                    }
+                });
+                if(gameState.pendingEvent) { 
+                    const panel = document.getElementById('eventPanel'); 
+                    panel.style.display = 'block'; 
+                    panel.innerHTML = `<div><strong>⚠️ EVENT</strong><br>${gameState.pendingEvent.text}</div><div class="event-buttons">${gameState.pendingEvent.options.map((opt,idx)=>`<button class="btn" onclick="resolveEvent(${idx})">${opt.text}</button>`).join('')}</div>`; 
+                } 
+            } catch(e) { console.warn(e); } 
+        } 
+        if(gameState.selectedAircraftUniqueId===undefined || !gameState.aircrafts.find(a=>a.uniqueId===gameState.selectedAircraftUniqueId)) {
+            gameState.selectedAircraftUniqueId = gameState.aircrafts[0]?.uniqueId || null;
+        }
+        updateCompanyLevel();
+        unlockNewCities();
+        refreshAll(); 
+        startBackgroundProcesses(); 
+        updateLoanUI(); 
+        updateSeasonUI(); 
+        checkBankruptcy(); 
+        checkAchievements(); 
+        if(document.querySelector('.nav-btn')) switchScreen('overview');
+    }
+
+    function checkBankruptcy() { const cheapest = Math.min(...aircraftDB.map(a => a.price)); const hasPending = gameState.routes.some(r => !r.active); if(gameState.aircrafts.length === 0 && gameState.money < cheapest && !gameState.loanActive && !hasPending) { document.getElementById('bailoutMessage').innerHTML = `You have no aircraft and €${Math.floor(gameState.money).toLocaleString()}.<br>Emergency loan of €25,000 with 50% repayment.`; document.getElementById('bailoutDialog').style.display = 'block'; } }
+    function acceptBailout() { gameState.money += 25000; gameState.loanActive = true; gameState.loanRemaining = 30000; saveGame(); refreshAll(); updateLoanUI(); document.getElementById('bailoutDialog').style.display = 'none'; showToast(`💶 Emergency loan granted!`); }
+
+    function refreshAll() { 
+        refreshStats(); 
+        renderAircrafts(); 
+        renderRoutes(); 
+        updateAircraftSelect(); 
+        renderOverview(); 
+        updateSliderInfo(); 
+        updateProfitPreview(); 
+        updateLoanUI(); 
+        renderStatistics(); 
+        renderAchievements(); 
+        renderLoans(); 
+        // Only update map markers if needed (optimization)
+        if(mapNeedsUpdate) {
+            updateMapMarkers();
+            mapNeedsUpdate = false;
+        }
+        updateCompanyLevel(); 
+        updateHubButton(); 
+    }
+    
+    function updateHubButton() { const hubBtn = document.getElementById('setHubBtn'); if(hubBtn) hubBtn.disabled = !selectedStart; }
+    function refreshStats() { const active = gameState.routes.filter(r=>r.active && r.endTime>Date.now()).length; document.getElementById('miniMoney').innerHTML = `€${Math.floor(gameState.money).toLocaleString()}`; document.getElementById('miniPlanes').innerText = gameState.aircrafts.length; document.getElementById('miniRoutes').innerText = active; document.getElementById('miniFuel').innerHTML = `€${gameState.fuelPrice.toFixed(2)}`; document.getElementById('ovMoney').innerHTML = `€${Math.floor(gameState.money).toLocaleString()}`; document.getElementById('ovPlanes').innerText = gameState.aircrafts.length; document.getElementById('ovRoutes').innerText = gameState.routes.length; document.getElementById('ovRevenue').innerHTML = `€${Math.floor(gameState.totalRevenue).toLocaleString()}`; }
+    function renderOverview() { const recent = gameState.routes.slice(-3).reverse(); const c = document.getElementById('recentRoutesList'); if(c) c.innerHTML = recent.length ? recent.map(r=>`<div style="background:#f8fafc; border-radius:12px; padding:8px;"><strong>${r.fromName} → ${r.toName}</strong><br>${r.aircraftName}</div>`).join('') : '<div>No routes yet.</div>'; }
+    
+    function renderAircrafts() { const cont = document.getElementById('aircraftListScreen'); if(!cont) return; if(!gameState.aircrafts.length) { cont.innerHTML = '<div style="padding:16px; text-align:center;">✈️ No aircraft. Buy first!</div>'; return; } let sorted = [...gameState.aircrafts]; const sortBy = document.getElementById('fleetSort')?.value || 'name'; const filterBy = document.getElementById('fleetFilter')?.value || 'all'; if(filterBy !== 'all') sorted = sorted.filter(ac => ac.weightClass === filterBy); if(sortBy === 'name') sorted.sort((a,b) => a.name.localeCompare(b.name)); if(sortBy === 'price') sorted.sort((a,b) => a.price - b.price); if(sortBy === 'priceDesc') sorted.sort((a,b) => b.price - a.price); if(sortBy === 'capacity') sorted.sort((a,b) => b.capacity - a.capacity); cont.innerHTML = sorted.map(ac => { const isSelected = gameState.selectedAircraftUniqueId === ac.uniqueId; let status = ac.busy ? 'BUSY' : 'IDLE'; let statusClass = ac.busy ? 'status-busy' : 'status-idle'; if(ac.maintenance) { status = 'MAINTENANCE'; statusClass = 'status-maintenance'; } return `<div class="aircraft-card ${isSelected ? 'selected' : ''}" onclick="selectAircraft('${ac.uniqueId}')"><div><strong>${ac.image} ${ac.name}</strong><div style="font-size:11px;">👥 ${ac.capacity} | 📡 ${ac.range}km | ⛽ ${ac.fuelBurn} L/km</div></div><div style="text-align:right;"><span class="${statusClass}">${status}</span><br>💰 ${ac.price.toLocaleString()}€</div></div>`; }).join(''); }
+    function selectAircraft(uid) { gameState.selectedAircraftUniqueId = uid; renderAircrafts(); showToast(`Selected ${gameState.aircrafts.find(a=>a.uniqueId===uid)?.name}`); }
+    function updateAircraftSelect() { const sel = document.getElementById('aircraftSelect'); if(sel) sel.innerHTML = '<option value="">-- Select IDLE Aircraft --</option>' + gameState.aircrafts.filter(ac=>!ac.busy && !ac.maintenance).map(ac => `<option value="${ac.uniqueId}">${ac.image} ${ac.name} (Cap:${ac.capacity} | Range:${ac.range}km)</option>`).join(''); updateProfitPreview(); }
+
+    async function updateProfitPreview() { const pre = document.getElementById('profitPreview'); if(!selectedStart || !selectedEnd) { pre.innerText = '💶 Select start and destination first'; return; } const aid = document.getElementById('aircraftSelect').value; if(!aid) { pre.innerText = '💶 Select an aircraft'; return; } const ac = gameState.aircrafts.find(a => a.uniqueId === aid); if(!ac) return; const dist = getDistance(selectedStart, selectedEnd); if(dist > ac.range) { pre.innerText = '❌ Range too short'; return; } const dKey = getDemandKey(selectedStart.id, selectedEnd.id); const demand = gameState.routeDemand[dKey]?.demand || 1.0; const temp = { distance: dist, priceMultiplier: routePriceMultiplier, capacity: ac.capacity, basePricePerKm: ac.baseTicketPrice, fuelBurn: ac.fuelBurn, airportFee: ac.airportFee, from: selectedStart.id }; let profit = computeFlightProfit(temp, demand, gameState.fuelPrice); if(gameState.loanActive && profit > 0) profit = Math.floor(profit * 0.5); pre.innerHTML = `💶 Expected: <strong>€${profit.toLocaleString()}</strong> (demand: ${(demand*100).toFixed(0)}%, season: ${(getSeasonBonus(selectedStart.id)*100).toFixed(0)}%)`; }
+
+    async function createRouteFromMap() { 
+        if(!selectedStart || !selectedEnd) { showToast('Select start and destination', true); return; } 
+        const aid = document.getElementById('aircraftSelect').value; 
+        if(!aid) { showToast('Select an aircraft', true); return; } 
+        const ac = gameState.aircrafts.find(a => a.uniqueId === aid); 
+        if(!ac) return; 
+        if(ac.busy || ac.maintenance) { showToast('Aircraft not available', true); return; } 
+        const startMaxSlots = getMaxSlots(selectedStart.id);
+        const endMaxSlots = getMaxSlots(selectedEnd.id);
+        if(getCitySlotUsage(selectedStart.id, gameState.routes) >= startMaxSlots) { 
+            showToast(`No slots at ${selectedStart.name}! Upgrade?`, true); 
+            return; 
+        } 
+        if(getCitySlotUsage(selectedEnd.id, gameState.routes) >= endMaxSlots) { 
+            showToast(`No slots at ${selectedEnd.name}! Upgrade?`, true); 
+            return; 
+        } 
+        const dist = getDistance(selectedStart, selectedEnd); 
+        if(dist > ac.range) { showToast(`Range too short! Need ${dist}km`, true); return; } 
+        const fee = ac.airportFee + dist * 0.05; 
+        if(gameState.money < fee) { showToast(`Need €${Math.floor(fee)} for fee`, true); return; } 
+        gameState.money -= fee; 
+        const route = { 
+            id: Date.now(), 
+            from: selectedStart.id, 
+            to: selectedEnd.id, 
+            fromName: selectedStart.name, 
+            toName: selectedEnd.name, 
+            aircraftUniqueId: ac.uniqueId, 
+            aircraftName: ac.name, 
+            duration: Math.max(20, Math.floor((dist / ac.speed) * 3600)), 
+            active: false, 
+            endTime: null, 
+            priceMultiplier: routePriceMultiplier, 
+            distance: dist, 
+            capacity: ac.capacity, 
+            basePricePerKm: ac.baseTicketPrice, 
+            fuelBurn: ac.fuelBurn, 
+            airportFee: ac.airportFee 
+        }; 
+        gameState.routes.push(route); 
+        mapNeedsUpdate = true;
+        saveGame(); 
+        refreshAll(); 
+        clearMapSelection(); 
+        showToast(`✅ Route: ${selectedStart.name} → ${selectedEnd.name} | Fee: €${Math.floor(fee)}`); 
+        selectedStart = null; 
+        selectedEnd = null; 
+    }
+
+    function startFlight(rid) { 
+        const r = gameState.routes.find(r => r.id === rid); 
+        if (!r || r.active) { showToast('Route not found or active', true); return; } 
+        const ac = gameState.aircrafts.find(a => a.uniqueId === r.aircraftUniqueId); 
+        if (!ac || ac.busy || ac.maintenance) { showToast('Aircraft not available', true); return; } 
+        ac.busy = true; 
+        r.active = true; 
+        r.endTime = Date.now() + r.duration * 1000; 
+        mapNeedsUpdate = true;
+        saveGame(); 
+        refreshAll(); 
+        startFlightTimer(r); 
+        showToast(`✈️ Flight departed!`); 
+    }
+    
+    function startFlightTimer(route) { 
+        if(flightTimers[route.id]) clearInterval(flightTimers[route.id]); 
+        flightTimers[route.id] = setInterval(() => { 
+            if(Date.now() >= route.endTime) { 
+                clearInterval(flightTimers[route.id]); 
+                completeFlight(route.id); 
+            } else { 
+                updateSingleTimer(route.id); 
+            } 
+        }, 1000); 
+    }
+    
+    function updateSingleTimer(rid) { 
+        const r = gameState.routes.find(r => r.id === rid); 
+        if(!r) return; 
+        const el = document.getElementById(`timer-${r.id}`); 
+        if(el && r.active && r.endTime) { 
+            const rem = Math.max(0, r.endTime - Date.now()); 
+            const mins = Math.floor(rem / 60000); 
+            const secs = Math.floor((rem % 60000) / 1000); 
+            el.innerText = `⏱️ ${mins}:${secs.toString().padStart(2,'0')}`; 
+        } 
+    }
+    
+    async function completeFlight(rid) { 
+        const r = gameState.routes.find(r => r.id === rid); 
+        if (!r || !r.active) return; 
+        const dKey = getDemandKey(r.from, r.to); 
+        updateDemand(dKey); 
+        const demand = gameState.routeDemand[dKey]?.demand || 1.0; 
+        let profit = computeFlightProfit(r, demand, gameState.fuelPrice); 
+        const ac = gameState.aircrafts.find(a => a.uniqueId === r.aircraftUniqueId); 
+        if (ac) { 
+            ac.busy = false; 
+            ac.flightsCount = (ac.flightsCount || 0) + 1; 
+            if(ac.flightsCount >= 10 && !ac.maintenance) { 
+                ac.maintenance = true; 
+                ac.busy = true; 
+                if(maintenanceTimeout) clearTimeout(maintenanceTimeout); 
+                pendingMaintenanceAircraft = ac; 
+                showMaintenanceDialog(ac); 
+            } 
+        } 
+        r.active = false; 
+        updateStatistics(r, profit); 
+        if (gameState.loanActive && profit > 0) profit = applyLoanRepayment(profit); 
+        gameState.money += profit; 
+        gameState.totalRevenue += profit; 
+        mapNeedsUpdate = true;
+        saveGame(); 
+        refreshAll(); 
+        showToast(`✅ Completed! +€${profit.toLocaleString()}`); 
+        checkBankruptcy(); 
+    }
+    
+    function showMaintenanceDialog(ac) { 
+        if(pendingMaintenanceAircraft && maintenanceTimeout) { 
+            clearTimeout(maintenanceTimeout); 
+            maintenanceTimeout = null; 
+        } 
+        const cost = getMaintenanceCost(ac.weightClass); 
+        document.getElementById('maintenanceMessage').innerHTML = `${ac.name} needs maintenance!<br>Pay €${cost.toLocaleString()} or wait 30 seconds.`; 
+        document.getElementById('maintenanceDialog').style.display = 'block'; 
+    }
+    
+    function resolveMaintenancePay() { 
+        if(pendingMaintenanceAircraft) { 
+            const cost = getMaintenanceCost(pendingMaintenanceAircraft.weightClass); 
+            if(gameState.money >= cost) { 
+                gameState.money -= cost; 
+                pendingMaintenanceAircraft.maintenance = false; 
+                pendingMaintenanceAircraft.flightsCount = 0; 
+                pendingMaintenanceAircraft.busy = false; 
+                showToast(`🔧 ${pendingMaintenanceAircraft.name} repaired!`); 
+                mapNeedsUpdate = true;
+                saveGame(); 
+                refreshAll(); 
+            } else { 
+                showToast(`Not enough money!`, true); 
+            } 
+            if(maintenanceTimeout) { 
+                clearTimeout(maintenanceTimeout); 
+                maintenanceTimeout = null; 
+            } 
+            pendingMaintenanceAircraft = null; 
+            document.getElementById('maintenanceDialog').style.display = 'none'; 
+        } 
+    }
+    
+    function resolveMaintenanceWait() { 
+        if(pendingMaintenanceAircraft) { 
+            if(maintenanceTimeout) clearTimeout(maintenanceTimeout); 
+            showToast(`⏳ Waiting 30 seconds for ${pendingMaintenanceAircraft.name}...`); 
+            maintenanceTimeout = setTimeout(() => { 
+                if(pendingMaintenanceAircraft) { 
+                    pendingMaintenanceAircraft.maintenance = false; 
+                    pendingMaintenanceAircraft.flightsCount = 0; 
+                    pendingMaintenanceAircraft.busy = false; 
+                    showToast(`🔧 ${pendingMaintenanceAircraft.name} repaired after waiting!`); 
+                    mapNeedsUpdate = true;
+                    saveGame(); 
+                    refreshAll(); 
+                } 
+                if(maintenanceTimeout) maintenanceTimeout = null; 
+            }, 30000); 
+            pendingMaintenanceAircraft = null; 
+            document.getElementById('maintenanceDialog').style.display = 'none'; 
+        } 
+    }
+    
+    async function removeRoute(rid) { 
+        const confirmed = await showConfirm('Delete this route?'); 
+        if(!confirmed) return; 
+        const r = gameState.routes.find(r => r.id === rid); 
+        if(r && flightTimers[rid]) clearInterval(flightTimers[rid]); 
+        if(r) { 
+            const ac = gameState.aircrafts.find(a => a.uniqueId === r.aircraftUniqueId); 
+            if(ac) ac.busy = false; 
+        } 
+        gameState.routes = gameState.routes.filter(r => r.id !== rid); 
+        mapNeedsUpdate = true;
+        saveGame(); 
+        refreshAll(); 
+        showToast('Route deleted.'); 
+        checkBankruptcy(); 
+    }
+    
+    function autoStartAll() { 
+        let started = 0; 
+        for (let r of gameState.routes) { 
+            const isExpired = r.endTime && r.endTime < Date.now();
+            if (isExpired) { 
+                r.active = false; 
+                r.endTime = null; 
+                const ac = gameState.aircrafts.find(a => a.uniqueId === r.aircraftUniqueId);
+                if(ac) ac.busy = false;
+            }
+            if (!r.active && !r.endTime) { 
+                const ac = gameState.aircrafts.find(a => a.uniqueId === r.aircraftUniqueId); 
+                if (ac && !ac.busy && !ac.maintenance) { 
+                    ac.busy = true; 
+                    r.active = true; 
+                    r.endTime = Date.now() + r.duration * 1000; 
+                    startFlightTimer(r); 
+                    started++; 
+                } 
+            } 
+        } 
+        mapNeedsUpdate = true;
+        saveGame(); 
+        refreshAll(); 
+        showToast(`Started ${started} flights!`); 
+    }
+
+    function renderRoutes() { 
+        const cont = document.getElementById('routesListScreen'); 
+        if(!cont) return; 
+        if(!gameState.routes.length) { 
+            cont.innerHTML = '<div style="padding:16px; text-align:center;">No routes.</div>'; 
+            return; 
+        } 
+        cont.innerHTML = gameState.routes.map(r => { 
+            let timer = '', btnText = '✈️ START', btnDisabled = false; 
+            if(r.active && r.endTime) { 
+                const rem = Math.max(0, r.endTime - Date.now()); 
+                const mins = Math.floor(rem / 60000); 
+                const secs = Math.floor((rem % 60000) / 1000); 
+                timer = `⏱️ ${mins}:${secs.toString().padStart(2,'0')}`; 
+                btnText = '✈️ IN FLIGHT'; 
+                btnDisabled = true; 
+            } else { 
+                timer = '🟢 READY'; 
+                btnText = '✈️ START'; 
+                btnDisabled = false; 
+            } 
+            const dKey = getDemandKey(r.from, r.to); 
+            const demand = gameState.routeDemand[dKey]?.demand || 1.0; 
+            let profit = computeFlightProfit(r, demand, gameState.fuelPrice); 
+            if(gameState.loanActive && profit > 0) profit = Math.floor(profit * 0.5); 
+            return `<div class="route-item ${r.active ? 'active-flight' : ''}"><div><strong>${r.fromName} → ${r.toName}</strong><div style="font-size:11px;">${r.aircraftName} | 💰 ~€${profit.toLocaleString()}</div></div><div class="route-timer" id="timer-${r.id}">${timer}</div><div><button class="btn" id="route-start-${r.id}" onclick="startFlight(${r.id})" ${btnDisabled ? 'disabled' : ''}>${btnText}</button><button class="btn btn-danger" onclick="removeRoute(${r.id})">🗑️</button></div></div>`; 
+        }).join(''); 
+    }
+
+    function openBuyMenu() { 
+        const marketDiv = document.getElementById('marketList'); 
+        marketDiv.innerHTML = aircraftDB.map(ac => { 
+            const finalPrice = gameState.discountPercent > 0 ? Math.floor(ac.price * (1 - gameState.discountPercent/100)) : ac.price; 
+            const canBuy = gameState.money >= finalPrice; 
+            const priceColor = canBuy ? '#10b981' : '#ef4444'; 
+            return `<div class="aircraft-card" style="margin-bottom:10px;"><div><strong>${ac.image} ${ac.name}</strong><div style="font-size:11px;">👥 ${ac.capacity} | 📡 ${ac.range}km | ⛽ ${ac.fuelBurn} L/km</div></div><div><span style="color:${priceColor};">💰 ${finalPrice.toLocaleString()}€</span>${gameState.discountPercent>0 ? `<br><span style="color:#10b981;">-${gameState.discountPercent}%!</span>` : ''}<br><button class="btn btn-success" style="margin-top:5px;" onclick="buyAircraft(${ac.id})" ${!canBuy ? 'disabled' : ''}>BUY</button></div></div>`; 
+        }).join(''); 
+        document.getElementById('buyMenu').style.display = 'block'; 
+    }
+    
+    function closeBuyMenu() { document.getElementById('buyMenu').style.display = 'none'; }
+    
+    function buyAircraft(typeId) { 
+        const tmpl = aircraftDB.find(a => a.id === typeId); 
+        if(!tmpl) return; 
+        let price = tmpl.price; 
+        let msg = ''; 
+        if(gameState.discountPercent > 0) { 
+            price = Math.floor(price * (1 - gameState.discountPercent/100)); 
+            msg = ` (${gameState.discountPercent}% off)`; 
+            gameState.discountPercent = 0; 
+        } 
+        if(gameState.money < price) { 
+            showToast(`Need €${price.toLocaleString()}!`, true); 
+            return; 
+        } 
+        gameState.money -= price; 
+        const newAc = { ...tmpl, uniqueId: Date.now() + '-' + Math.random(), busy: false, busyOnRouteId: null, flightsCount: 0, maintenance: false }; 
+        gameState.aircrafts.push(newAc); 
+        if(gameState.aircrafts.length === 1) gameState.selectedAircraftUniqueId = newAc.uniqueId; 
+        saveGame(); 
+        refreshAll(); 
+        closeBuyMenu(); 
+        goldFlash('miniMoney'); 
+        showToast(`✈️ Purchased ${tmpl.name}!`); 
+        checkBankruptcy(); 
+    }
+    
+    function sellSelectedAircraft() { 
+        if(!gameState.selectedAircraftUniqueId) { 
+            showToast('Select aircraft first', true); 
+            return; 
+        } 
+        const idx = gameState.aircrafts.findIndex(a => a.uniqueId === gameState.selectedAircraftUniqueId); 
+        if(idx === -1) return; 
+        const ac = gameState.aircrafts[idx]; 
+        if(ac.busy || ac.maintenance) { 
+            showToast('Cannot sell busy aircraft', true); 
+            return; 
+        } 
+        const sellPrice = Math.floor(ac.price * 0.7); 
+        gameState.money += sellPrice; 
+        gameState.aircrafts.splice(idx, 1); 
+        gameState.routes = gameState.routes.filter(r => r.aircraftUniqueId !== ac.uniqueId); 
+        if(gameState.aircrafts.length === 0) gameState.selectedAircraftUniqueId = null; 
+        else gameState.selectedAircraftUniqueId = gameState.aircrafts[0]?.uniqueId || null; 
+        mapNeedsUpdate = true;
+        saveGame(); 
+        refreshAll(); 
+        goldFlash('miniMoney'); 
+        showToast(`💰 Sold ${ac.name} for €${sellPrice.toLocaleString()}`); 
+        checkBankruptcy(); 
+    }
+
+    // ==================== MAP ====================
+    function initMap() { 
+        if(map) return; 
+        map = L.map('map').setView([50, 10], 4); 
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OSM' }).addTo(map); 
+        updateMapMarkers(); 
+    }
+    
+    function getCityColor(type) { 
+        if(type === 'beach') return '#3b82f6'; 
+        if(type === 'mountain') return '#10b981'; 
+        return '#f59e0b'; 
+    }
+    
+    function updateMapMarkers() { 
+        if(!map) return; 
+        Object.values(markers).forEach(m => map.removeLayer(m)); 
+        markers = {}; 
+        cities.forEach(c => { 
+            const used = getCitySlotUsage(c.id, gameState.routes); 
+            const maxSlots = getMaxSlots(c.id);
+            const seasonBonus = getSeasonBonus(c.id); 
+            const hubBonus = (gameState.hubCity === c.id) ? '⭐ HUB +20%' : ''; 
+            const popup = `<b>${c.name}</b><br>Slots: ${used}/${maxSlots}<br>Level: ${c.level}<br>Season: ${(seasonBonus*100).toFixed(0)}%<br>${hubBonus}<br><button onclick="upgradeCity('${c.id}')" ${gameState.money < c.upgradeCost ? 'disabled' : ''}>Upgrade (€${c.upgradeCost.toLocaleString()})</button>`; 
+            const m = L.circleMarker([c.lat, c.lon], { radius: 9, fillColor: getCityColor(c.type), color: 'white', weight: 2, fillOpacity: 0.9 }).addTo(map); 
+            m.bindPopup(popup); 
+            m.on('click', () => onCityClick(c, m)); 
+            markers[c.id] = m; 
+        }); 
+    }
+    
+    function upgradeCity(cityId) { 
+        const city = cities.find(c => c.id === cityId); 
+        if(!city) return; 
+        const currentUpgrade = gameState.cityUpgrades[cityId];
+        const currentMaxSlots = currentUpgrade ? currentUpgrade.maxSlots : city.maxSlots;
+        const cost = city.upgradeCost;
+        if(gameState.money < cost) { 
+            showToast(`Need €${cost.toLocaleString()}`, true); 
+            return; 
+        } 
+        pendingUpgradeCity = { 
+            cityId, 
+            newMaxSlots: city.upgradeTo,
+            cost,
+            cityName: city.name,
+            currentSlots: currentMaxSlots
+        }; 
+        document.getElementById('upgradeCityMessage').innerHTML = `Upgrade ${city.name}?<br>Slots: ${currentMaxSlots} → ${city.upgradeTo}<br>Cost: €${cost.toLocaleString()}`; 
+        document.getElementById('upgradeCityDialog').style.display = 'block'; 
+    }
+    
+    function confirmUpgradeCity() { 
+        if(!pendingUpgradeCity) return; 
+        const { cityId, newMaxSlots, cost, cityName, currentSlots } = pendingUpgradeCity; 
+        if(gameState.money >= cost) { 
+            gameState.money -= cost; 
+            if (!gameState.cityUpgrades) gameState.cityUpgrades = {}; 
+            const current = gameState.cityUpgrades[cityId] || { maxSlots: currentSlots, level: 0 }; 
+            gameState.cityUpgrades[cityId] = { 
+                maxSlots: newMaxSlots, 
+                level: (current.level || 0) + 1 
+            }; 
+            // Update base city data for future upgrades
+            const city = cities.find(c => c.id === cityId); 
+            if (city) { 
+                city.level = (current.level || 0) + 2; 
+                city.upgradeCost = Math.floor(city.upgradeCost * 1.5); 
+                city.upgradeTo = Math.floor(city.upgradeTo * 1.3); 
+            } 
+            if (!gameState.anyUpgrade) { 
+                gameState.anyUpgrade = true; 
+                checkAchievements(); 
+            } 
+            mapNeedsUpdate = true;
+            saveGame(); 
+            refreshAll(); 
+            showToast(`🏗️ ${cityName} upgraded!`); 
+        } 
+        document.getElementById('upgradeCityDialog').style.display = 'none'; 
+        pendingUpgradeCity = null; 
+    }
+    
+    function cancelUpgradeCity() { 
+        document.getElementById('upgradeCityDialog').style.display = 'none'; 
+        pendingUpgradeCity = null; 
+    }
+    
+    function resetMapColors() { 
+        for(let id in markers) { 
+            const city = cities.find(c => c.id === id); 
+            if(city) markers[id].setStyle({ fillColor: getCityColor(city.type) }); 
+        } 
+    }
+    
+    function onCityClick(city, marker) { 
+        if(!selectedStart) { 
+            selectedStart = city; 
+            resetMapColors(); 
+            marker.setStyle({ fillColor: '#10b981' }); 
+            document.getElementById('selectionInfo').innerHTML = `📍 START: ${city.name}<br>✨ Click destination`; 
+            updateProfitPreview(); 
+        } else if(!selectedEnd && selectedStart.id !== city.id) { 
+            selectedEnd = city; 
+            marker.setStyle({ fillColor: '#ef4444' }); 
+            document.getElementById('selectionInfo').innerHTML = `📍 ${selectedStart.name} → ${city.name}<br>📏 ${getDistance(selectedStart, city)}km<br>✅ Set price and CREATE`; 
+            updateProfitPreview(); 
+        } else { 
+            selectedStart = city; 
+            selectedEnd = null; 
+            resetMapColors(); 
+            marker.setStyle({ fillColor: '#10b981' }); 
+            document.getElementById('selectionInfo').innerHTML = `📍 START: ${city.name}<br>✨ Click destination`; 
+            updateProfitPreview(); 
+        } 
+        updateHubButton(); 
+    }
+    
+    function clearMapSelection() { 
+        selectedStart = null; 
+        selectedEnd = null; 
+        resetMapColors(); 
+        document.getElementById('selectionInfo').innerHTML = '✨ Tap a city for START → then DESTINATION'; 
+        updateProfitPreview(); 
+        updateHubButton(); 
+    }
+    
+    function setHub() { 
+        if(!selectedStart) { 
+            showToast('Select a start city first!', true); 
+            return; 
+        } 
+        gameState.hubCity = selectedStart.id; 
+        gameState.hubSet = true; 
+        mapNeedsUpdate = true;
+        updateMapMarkers(); 
+        showToast(`⭐ ${selectedStart.name} is now your hub! +20% demand.`); 
+        saveGame(); 
+        checkAchievements(); 
+        refreshAll(); 
+    }
+
+    // ==================== STATISTICS ====================
+    function renderStatistics() { 
+        document.getElementById('statTotalFlights').innerText = gameState.totalFlights || 0; 
+        document.getElementById('statTotalDistance').innerHTML = `${(gameState.totalDistance || 0).toLocaleString()} km`; 
+        let total = 0, bestProfit = 0, bestKey = null, arr = []; 
+        for(let k in gameState.routeStats) { 
+            const rs = gameState.routeStats[k]; 
+            const avg = rs.totalProfit / rs.flights; 
+            total += rs.totalProfit; 
+            arr.push({ ...rs, avgProfit: avg, key: k }); 
+            if(avg > bestProfit) { 
+                bestProfit = avg; 
+                bestKey = k; 
+            } 
+        } 
+        const avgProfit = gameState.totalFlights > 0 ? Math.floor(total / gameState.totalFlights) : 0; 
+        document.getElementById('statAvgProfit').innerHTML = `€${avgProfit.toLocaleString()}`; 
+        if(bestKey && gameState.routeStats[bestKey]) { 
+            document.getElementById('statBestRoute').innerHTML = gameState.routeStats[bestKey].fromName + " → " + gameState.routeStats[bestKey].toName; 
+            document.getElementById('statBestProfit').innerHTML = `€${Math.floor(bestProfit).toLocaleString()}`; 
+        } 
+        const efficiency = gameState.aircrafts.length > 0 ? Math.floor((gameState.aircrafts.filter(a => a.busy).length / gameState.aircrafts.length) * 100) : 0; 
+        document.getElementById('statFleetEfficiency').innerHTML = `${efficiency}%`; 
+        arr.sort((a,b) => b.avgProfit - a.avgProfit); 
+        const top5 = arr.slice(0, 5); 
+        const topDiv = document.getElementById('topRoutesList'); 
+        if(topDiv) { 
+            if(top5.length === 0) topDiv.innerHTML = '<div>No completed flights.</div>'; 
+            else topDiv.innerHTML = top5.map((r, i) => `<div class="route-rank"><span>${i+1}. ${r.fromName} → ${r.toName}</span><span class="rank-profit">💰 €${Math.floor(r.avgProfit).toLocaleString()}</span><span>${r.flights} flights</span></div>`).join(''); 
+        } 
+        const chartDiv = document.getElementById('profitChart'); 
+        if(chartDiv) { 
+            if(arr.length === 0) chartDiv.innerHTML = '<div>No data.</div>'; 
+            else { 
+                const max = Math.max(...arr.map(r => r.avgProfit), 1); 
+                chartDiv.innerHTML = arr.slice(0, 8).map(r => `<div><div style="display:flex; justify-content:space-between;"><span>${r.fromName} → ${r.toName}</span><span>€${Math.floor(r.avgProfit).toLocaleString()}</span></div><div class="chart-bar"><div class="chart-fill" style="width: ${(r.avgProfit / max) * 100}%;"></div></div></div>`).join(''); 
+            } 
+        } 
+    }
+
+    // ==================== EVENTS ====================
+    function triggerRandomEvent() { 
+        if(gameState.pendingEvent) return; 
+        const events = [ 
+            { text: "⚡ Fuel spike!", options: [ 
+                { text: "Accept", effect: { fuelMult: 1.4 } }, 
+                { text: "Lobby", effect: { fuelMult: 1.2, penalty: -2000 } } 
+            ] }, 
+            { text: "🎉 Strong demand!", options: [ 
+                { text: "Raise prices", effect: { demandBoost: 1.2 } }, 
+                { text: "Keep stable", effect: { bonus: 3000 } } 
+            ] }, 
+            { text: "🌀 Storm delays!", options: [ 
+                { text: "Delay", effect: { penalty: -1500 } }, 
+                { text: "Reroute", effect: { fuelMult: 1.2, penalty: -500 } } 
+            ] }, 
+            { text: "✈️ Discount!", options: [ 
+                { text: "Use", effect: { discount15: true } }, 
+                { text: "Skip", effect: { bonus: 1000 } } 
+            ] } 
+        ]; 
+        gameState.pendingEvent = events[Math.floor(Math.random() * events.length)]; 
+        const panel = document.getElementById('eventPanel'); 
+        panel.style.display = 'block'; 
+        panel.innerHTML = `<div><strong>⚠️ EVENT</strong><br>${gameState.pendingEvent.text}</div><div class="event-buttons">${gameState.pendingEvent.options.map((opt, idx) => `<button class="btn" onclick="resolveEvent(${idx})">${opt.text}</button>`).join('')}</div>`; 
+        saveGame(); 
+    }
+    
+    function resolveEvent(idx) { 
+        if(!gameState.pendingEvent) return; 
+        const opt = gameState.pendingEvent.options[idx]; 
+        if(opt) { 
+            if(opt.effect.fuelMult) gameState.fuelPrice = Math.min(3.5, gameState.fuelPrice * opt.effect.fuelMult); 
+            if(opt.effect.penalty) { 
+                gameState.money = Math.max(0, gameState.money + opt.effect.penalty); 
+                showToast(`Cost: €${Math.abs(opt.effect.penalty)}`, true); 
+            } 
+            if(opt.effect.demandBoost) { 
+                for(let k in gameState.routeDemand) { 
+                    gameState.routeDemand[k].demand = Math.min(1.0, gameState.routeDemand[k].demand * opt.effect.demandBoost); 
+                } 
+                showToast(`Demand increased!`); 
+            } 
+            if(opt.effect.discount15) { 
+                gameState.discountPercent = 15; 
+                showToast(`15% discount!`); 
+            } 
+            if(opt.effect.bonus) { 
+                gameState.money += opt.effect.bonus; 
+                showToast(`Bonus: €${opt.effect.bonus}`); 
+            } 
+            saveGame(); 
+            refreshAll(); 
+        } 
+        gameState.pendingEvent = null; 
+        document.getElementById('eventPanel').style.display = 'none'; 
+        checkBankruptcy(); 
+    }
+
+    // ==================== BACKGROUND PROCESSES ====================
+    function startBackgroundProcesses() { 
+        if(demandRecoveryInterval) clearInterval(demandRecoveryInterval); 
+        demandRecoveryInterval = setInterval(() => recoverDemands(), 60000); 
+        if(fuelFluctuationInterval) clearInterval(fuelFluctuationInterval); 
+        fuelFluctuationInterval = setInterval(() => { 
+            let change = (Math.random() - 0.5) * 0.15; 
+            gameState.fuelPrice = Math.max(1.0, Math.min(3.2, gameState.fuelPrice + change)); 
+            saveGame(); 
+            refreshStats(); 
+        }, 90000); 
+        if(eventInterval) clearInterval(eventInterval); 
+        eventInterval = setInterval(() => { 
+            if(Math.random() < 0.3) triggerRandomEvent(); 
+        }, 120000); 
+        if(seasonInterval) clearInterval(seasonInterval); 
+        seasonInterval = setInterval(() => { 
+            updateSeasonUI(); 
+            refreshAll(); 
+        }, 3600000); 
+    }
+
+    // ==================== UTILITY ====================
+    function showConfirm(msg) { 
+        return new Promise((resolve) => { 
+            confirmResolve = resolve; 
+            document.getElementById('confirmMessage').innerText = msg; 
+            document.getElementById('confirmDialog').style.display = 'block'; 
+        }); 
+    }
+    
+    function showToast(msg, err = false) { 
+        let t = document.createElement('div'); 
+        t.className = `toast ${err ? 'error' : ''}`; 
+        t.innerHTML = err ? `⚠️ ${msg}` : `✈️ ${msg}`; 
+        document.body.appendChild(t); 
+        setTimeout(() => t.remove(), 3500); 
+    }
+    
+    function goldFlash(id) { 
+        const el = document.getElementById(id); 
+        if(el) { 
+            el.classList.add('gold-flash'); 
+            setTimeout(() => el.classList.remove('gold-flash'), 400); 
+        } 
+    }
+    
+    function switchScreen(id) { 
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
+        const target = document.getElementById(`screen-${id}`); 
+        if(target) target.classList.add('active'); 
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); 
+        const activeBtn = document.querySelector(`.nav-btn[data-screen="${id}"]`); 
+        if(activeBtn) activeBtn.classList.add('active'); 
+        if(id === 'map') setTimeout(() => { 
+            if(!map) initMap(); 
+            else map.invalidateSize(); 
+            updateProfitPreview(); 
+        }, 100); 
+        if(id === 'stats') renderStatistics(); 
+        if(id === 'achievements') renderAchievements(); 
+        if(id === 'loans') renderLoans(); 
+    }
+    
+    function updateSliderInfo() { 
+        const lbl = document.getElementById('priceMultLabel'); 
+        if(lbl) lbl.innerHTML = routePriceMultiplier.toFixed(2) + 'x'; 
+        updateProfitPreview(); 
+    }
+
+    // ==================== EVENT LISTENERS ====================
+    document.getElementById('priceSlider')?.addEventListener('input', (e) => { 
+        routePriceMultiplier = parseFloat(e.target.value); 
+        updateSliderInfo(); 
+    });
+    document.getElementById('createRouteBtnMap')?.addEventListener('click', createRouteFromMap);
+    document.getElementById('clearMapBtn')?.addEventListener('click', clearMapSelection);
+    document.getElementById('buyQuickBtn')?.addEventListener('click', openBuyMenu);
+    document.getElementById('aircraftSelect')?.addEventListener('change', updateProfitPreview);
+    document.getElementById('autoStartBtn')?.addEventListener('click', autoStartAll);
+    document.getElementById('setHubBtn')?.addEventListener('click', setHub);
+    document.getElementById('upgradeCityConfirm')?.addEventListener('click', confirmUpgradeCity);
+    document.getElementById('upgradeCityCancel')?.addEventListener('click', cancelUpgradeCity);
+    document.getElementById('maintenancePayBtn')?.addEventListener('click', resolveMaintenancePay);
+    document.getElementById('maintenanceWaitBtn')?.addEventListener('click', resolveMaintenanceWait);
+    document.getElementById('importCancelBtn')?.addEventListener('click', () => document.getElementById('importDialog').style.display = 'none');
+    document.getElementById('importConfirmBtn')?.addEventListener('click', () => { 
+        const data = document.getElementById('importData').value; 
+        if(data) { 
+            importGame(data); 
+            document.getElementById('importDialog').style.display = 'none'; 
+        } 
+    });
+    
+    document.getElementById('confirmYesBtn').onclick = () => { 
+        if(confirmResolve) confirmResolve(true); 
+        document.getElementById('confirmDialog').style.display = 'none'; 
+        confirmResolve = null; 
+    };
+    document.getElementById('confirmNoBtn').onclick = () => { 
+        if(confirmResolve) confirmResolve(false); 
+        document.getElementById('confirmDialog').style.display = 'none'; 
+        confirmResolve = null; 
+    };
+    document.getElementById('bailoutBtn').onclick = () => { 
+        acceptBailout(); 
+        document.getElementById('bailoutDialog').style.display = 'none'; 
+    };
+    
+    document.querySelectorAll('.nav-btn').forEach(btn => { 
+        btn.addEventListener('click', () => { 
+            const screen = btn.dataset.screen; 
+            if(screen) switchScreen(screen); 
+        }); 
+    });
+
+    // ==================== GLOBAL EXPOSURE ====================
+    window.selectAircraft = selectAircraft; 
+    window.buyAircraft = buyAircraft; 
+    window.startFlight = startFlight; 
+    window.removeRoute = removeRoute; 
+    window.sellSelectedAircraft = sellSelectedAircraft; 
+    window.openBuyMenu = openBuyMenu; 
+    window.closeBuyMenu = closeBuyMenu; 
+    window.switchScreen = switchScreen; 
+    window.resolveEvent = resolveEvent; 
+    window.takeLoan = takeLoan; 
+    window.upgradeCity = upgradeCity; 
+    window.exportGame = exportGame; 
+    window.importGamePrompt = importGamePrompt; 
+    window.newGame = newGame;
+
+    // ==================== START ====================
+    loadGame();
+
+    // ==================== SERVICE WORKER REGISTRATION ====================
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            console.log('✅ Service Worker registered');
+        }).catch(err => {
+            console.log('❌ Service Worker registration failed:', err);
+        });
+    }
+</script>
+</body>
+</html>
