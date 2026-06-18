@@ -2,7 +2,7 @@ import { Game, saveGame } from './game.js';
 import { DOM, updateText, updateHTML, showElement, hideElement } from './cache.js';
 import { aircraftDB, aircraftUpgrades, achievementsDB } from './data.js';
 import { getDistance, getDemandKey, getSeasonBonus, getCurrentSeason, computeFlightProfit } from './utils.js';
-import { updateCompanyLevel } from './state.js';
+import { updateCompanyLevel } from './state.js'; // <-- Тук е правилният импорт
 import { AudioSystem } from './audio.js';
 import { renderLoans } from './loans.js';
 import { renderRouteAnalytics } from './routes.js';
