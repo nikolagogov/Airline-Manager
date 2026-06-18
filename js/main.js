@@ -48,27 +48,19 @@ import {
 let leaderboardCache = {
     data: null,
     lastUpdate: 0,
-    cacheDuration: 300000 // 5 минути
+    cacheDuration: 300000
 };
 
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
-    // Кеширане на DOM елементи
     cacheElements();
-    
-    // Изчакай auth преди зареждане на играта
     setupAuthAndGame();
 });
 
-let authInitialized = false;
-
 function setupAuthAndGame() {
-    // Слушаме за първото auth състояние
     const unsubscribe = onAuthChange(async (user) => {
-        // Спри да слушаш след първото състояние
         unsubscribe();
         
-        // Зареди локалния запис
         const saved = loadGameFromStorage();
         if (saved) {
             Object.assign(gameState, saved);
@@ -79,7 +71,6 @@ function setupAuthAndGame() {
         Game.state = gameState;
         Game.cities = [...baseCities];
         
-        // Ако има логнат потребител, зареди от облака
         if (user) {
             const result = await loadGameFromCloud(user.uid);
             if (result.success && result.data) {
@@ -88,12 +79,9 @@ function setupAuthAndGame() {
             }
         }
         
-        // Настройка на събитията
         setupEventDelegation();
         setupMapHandling();
         setupAuthUI();
-        
-        // Зареждане на играта
         loadGame();
     });
 }
@@ -112,81 +100,31 @@ function handleGlobalClick(e) {
     const action = target.dataset.action;
     
     switch(action) {
-        case 'switchScreen':
-            switchScreen(target.dataset.screen);
-            break;
-        case 'openBuyMenu':
-            openBuyMenu();
-            break;
-        case 'closeBuyMenu':
-            closeBuyMenu();
-            break;
-        case 'buyAircraft':
-            buyAircraft(parseInt(target.dataset.id));
-            break;
-        case 'sellAircraft':
-            sellSelectedAircraft();
-            break;
-        case 'startFlight':
-            startFlight(parseInt(target.dataset.id));
-            break;
-        case 'removeRoute':
-            removeRoute(parseInt(target.dataset.id));
-            break;
-        case 'takeLoan':
-            takeLoan(parseInt(target.dataset.amount), parseInt(target.dataset.repayment));
-            break;
-        case 'upgradeCity':
-            upgradeCity(target.dataset.id);
-            break;
-        case 'confirmUpgrade':
-            confirmUpgradeCity();
-            break;
-        case 'cancelUpgrade':
-            cancelUpgradeCity();
-            break;
-        case 'showUpgrades':
-            showUpgrades(target.dataset.id);
-            break;
-        case 'applyUpgrade':
-            applyUpgrade(target.dataset.id, target.dataset.upgrade);
-            break;
-        case 'resolveEvent':
-            resolveEvent(parseInt(target.dataset.idx));
-            break;
-        case 'toggleDarkMode':
-            toggleDarkMode();
-            break;
-        case 'toggleSound':
-            AudioSystem.toggle();
-            break;
-        case 'exportGame':
-            exportGame();
-            break;
-        case 'importGame':
-            importGamePrompt();
-            break;
-        case 'newGame':
-            newGame();
-            break;
-        case 'showPrestige':
-            showPrestigeDialog();
-            break;
-        case 'setHub':
-            setHub();
-            break;
-        case 'clearMap':
-            clearMapSelection();
-            break;
-        case 'createRoute':
-            createRouteFromMap();
-            break;
-        case 'autoStart':
-            autoStartAll();
-            break;
-        case 'randomizeName':
-            randomizeAirlineName();
-            break;
+        case 'switchScreen': switchScreen(target.dataset.screen); break;
+        case 'openBuyMenu': openBuyMenu(); break;
+        case 'closeBuyMenu': closeBuyMenu(); break;
+        case 'buyAircraft': buyAircraft(parseInt(target.dataset.id)); break;
+        case 'sellAircraft': sellSelectedAircraft(); break;
+        case 'startFlight': startFlight(parseInt(target.dataset.id)); break;
+        case 'removeRoute': removeRoute(parseInt(target.dataset.id)); break;
+        case 'takeLoan': takeLoan(parseInt(target.dataset.amount), parseInt(target.dataset.repayment)); break;
+        case 'upgradeCity': upgradeCity(target.dataset.id); break;
+        case 'confirmUpgrade': confirmUpgradeCity(); break;
+        case 'cancelUpgrade': cancelUpgradeCity(); break;
+        case 'showUpgrades': showUpgrades(target.dataset.id); break;
+        case 'applyUpgrade': applyUpgrade(target.dataset.id, target.dataset.upgrade); break;
+        case 'resolveEvent': resolveEvent(parseInt(target.dataset.idx)); break;
+        case 'toggleDarkMode': toggleDarkMode(); break;
+        case 'toggleSound': AudioSystem.toggle(); break;
+        case 'exportGame': exportGame(); break;
+        case 'importGame': importGamePrompt(); break;
+        case 'newGame': newGame(); break;
+        case 'showPrestige': showPrestigeDialog(); break;
+        case 'setHub': setHub(); break;
+        case 'clearMap': clearMapSelection(); break;
+        case 'createRoute': createRouteFromMap(); break;
+        case 'autoStart': autoStartAll(); break;
+        case 'randomizeName': randomizeAirlineName(); break;
         case 'confirmYes':
             if (Game.confirmResolve) {
                 Game.confirmResolve(true);
@@ -201,60 +139,29 @@ function handleGlobalClick(e) {
                 Game.confirmResolve = null;
             }
             break;
-        case 'acceptBailout':
-            acceptBailout();
-            break;
+        case 'acceptBailout': acceptBailout(); break;
         case 'importConfirm':
             const data = DOM.importData?.value;
-            if (data) {
-                importGame(data);
-                hideElement('importDialog');
-            }
+            if (data) { importGame(data); hideElement('importDialog'); }
             break;
-        case 'importCancel':
-            hideElement('importDialog');
-            break;
-        case 'nextTutorial':
-            nextTutorialStep();
-            break;
-        case 'skipTutorial':
-            finishTutorial();
-            break;
-        case 'closeUpgrade':
-            hideElement('upgradePanel');
-            break;
-        case 'payMaintenance':
-            resolveMaintenancePay();
-            break;
-        case 'waitMaintenance':
-            resolveMaintenanceWait();
-            break;
-        case 'prestigeBtn':
-            showPrestigeDialog();
-            break;
-        case 'buyBtn':
-            openBuyMenu();
-            break;
-        case 'buyFleetBtn':
-            openBuyMenu();
-            break;
-        default:
-            console.warn('Unknown action:', action);
+        case 'importCancel': hideElement('importDialog'); break;
+        case 'nextTutorial': nextTutorialStep(); break;
+        case 'skipTutorial': finishTutorial(); break;
+        case 'closeUpgrade': hideElement('upgradePanel'); break;
+        case 'payMaintenance': resolveMaintenancePay(); break;
+        case 'waitMaintenance': resolveMaintenanceWait(); break;
+        case 'prestigeBtn': showPrestigeDialog(); break;
+        case 'buyBtn': openBuyMenu(); break;
+        case 'buyFleetBtn': openBuyMenu(); break;
+        default: console.warn('Unknown action:', action);
     }
 }
 
 function handleGlobalChange(e) {
     const target = e.target;
-    
-    if (target.id === 'airlineNameInput') {
-        updateAirlineName(target.value);
-    }
-    if (target.id === 'fleetSort' || target.id === 'fleetFilter') {
-        renderAircrafts();
-    }
-    if (target.id === 'aircraftSelect') {
-        updateProfitPreview();
-    }
+    if (target.id === 'airlineNameInput') updateAirlineName(target.value);
+    if (target.id === 'fleetSort' || target.id === 'fleetFilter') renderAircrafts();
+    if (target.id === 'aircraftSelect') updateProfitPreview();
 }
 
 function handleGlobalInput(e) {
@@ -272,11 +179,7 @@ function setupMapHandling() {
         mapBtn.addEventListener('click', () => {
             const mapScreen = document.getElementById('screen-map');
             const onTransitionEnd = () => {
-                if (Game.map) {
-                    Game.map.invalidateSize();
-                } else {
-                    initMap();
-                }
+                if (Game.map) { Game.map.invalidateSize(); } else { initMap(); }
                 mapScreen.removeEventListener('transitionend', onTransitionEnd);
                 updateProfitPreview();
             };
@@ -295,7 +198,6 @@ function setupMapHandling() {
 let currentUser = null;
 
 function setupAuthUI() {
-    // Auth form elements
     const emailInput = document.getElementById('authEmail');
     const passwordInput = document.getElementById('authPassword');
     const loginBtn = document.getElementById('authLoginBtn');
@@ -307,14 +209,10 @@ function setupAuthUI() {
     const userEmailEl = document.getElementById('authUserEmail');
     const onlineBadge = document.querySelector('.online-badge');
     
-    // Login
     loginBtn?.addEventListener('click', async () => {
         const email = emailInput?.value?.trim();
         const password = passwordInput?.value?.trim();
-        if (!email || !password) {
-            showToast('Please enter email and password', true);
-            return;
-        }
+        if (!email || !password) { showToast('Please enter email and password', true); return; }
         const result = await loginUser(email, password);
         if (result.success) {
             showToast('✅ Logged in!');
@@ -325,18 +223,11 @@ function setupAuthUI() {
         }
     });
     
-    // Register
     registerBtn?.addEventListener('click', async () => {
         const email = emailInput?.value?.trim();
         const password = passwordInput?.value?.trim();
-        if (!email || !password) {
-            showToast('Please enter email and password', true);
-            return;
-        }
-        if (password.length < 6) {
-            showToast('Password must be at least 6 characters', true);
-            return;
-        }
+        if (!email || !password) { showToast('Please enter email and password', true); return; }
+        if (password.length < 6) { showToast('Password must be at least 6 characters', true); return; }
         const result = await registerUser(email, password);
         if (result.success) {
             showToast('✅ Registered!');
@@ -347,34 +238,25 @@ function setupAuthUI() {
         }
     });
     
-    // Google Login
     googleBtn?.addEventListener('click', async () => {
         const result = await loginWithGoogle();
-        if (result.success) {
-            showToast('✅ Logged in with Google!');
-        } else {
-            showToast('❌ ' + result.error, true);
-        }
+        if (result.success) { showToast('✅ Logged in with Google!'); } 
+        else { showToast('❌ ' + result.error, true); }
     });
     
-    // Logout
     logoutBtn?.addEventListener('click', async () => {
         await logoutUser();
         showToast('Logged out');
     });
     
-    // Auth state listener (само за UI, не за зареждане)
     onAuthChange(async (user) => {
         currentUser = user;
         const authState = getAuthState(user);
-        
         if (authState.isLoggedIn) {
             authForms.style.display = 'none';
             authUserInfo.style.display = 'flex';
             userEmailEl.textContent = authState.email;
             if (onlineBadge) onlineBadge.textContent = '● Online';
-            
-            // Update leaderboard
             await saveToLeaderboard(user.uid, authState.displayName || authState.email || 'Anonymous', gameState);
         } else {
             authForms.style.display = 'flex';
@@ -383,18 +265,12 @@ function setupAuthUI() {
         }
     });
     
-    // Enter key support
-    emailInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') loginBtn?.click();
-    });
-    passwordInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') loginBtn?.click();
-    });
+    emailInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn?.click(); });
+    passwordInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn?.click(); });
 }
 
 // ==================== LOAD GAME ====================
 function loadGame() {
-    // Reset maintenance state
     Game.pendingMaintenance = null;
     if (Game.maintenanceTimeout) {
         clearTimeout(Game.maintenanceTimeout);
@@ -402,18 +278,15 @@ function loadGame() {
     }
     hideElement('maintenanceDialog');
     
-    // Load airline name
     if (gameState.airlineName && DOM.airlineNameInput) {
         DOM.airlineNameInput.value = gameState.airlineName;
     }
     
-    // Set selected aircraft
     if (gameState.selectedAircraftUniqueId === undefined ||
         !gameState.aircrafts.find(a => a.uniqueId === gameState.selectedAircraftUniqueId)) {
         gameState.selectedAircraftUniqueId = gameState.aircrafts[0]?.uniqueId || null;
     }
     
-    // Restore active flights
     gameState.routes.forEach(r => {
         if (r.active && r.endTime > Date.now()) {
             startFlightTimer(r);
@@ -425,7 +298,6 @@ function loadGame() {
         }
     });
     
-    // Restore pending event
     if (gameState.pendingEvent) {
         showElement('eventPanel');
         const panel = DOM.eventPanel;
@@ -444,7 +316,6 @@ function loadGame() {
         }
     }
     
-    // Initialize
     updateCompanyLevel();
     unlockNewCities();
     refreshAll();
@@ -456,7 +327,6 @@ function loadGame() {
     checkBankruptcy();
     checkAchievements();
     
-    // Set default screen
     if (document.querySelector('[data-screen]')) switchScreen('overview');
 }
 
@@ -567,7 +437,6 @@ export function updateStatistics(route, profit) {
     gameState.routeStats[key].flights++;
     gameState.routeStats[key].totalProfit += profit;
     
-    // Route analytics
     const routeKey = `${route.from}-${route.to}`;
     if (!Game.routeAnalytics) Game.routeAnalytics = {};
     if (!Game.routeAnalytics[routeKey]) {
@@ -732,7 +601,6 @@ export async function renderLeaderboard() {
     
     const now = Date.now();
     
-    // Използвай кеш, ако е валиден
     if (leaderboardCache.data && (now - leaderboardCache.lastUpdate) < leaderboardCache.cacheDuration) {
         renderLeaderboardHTML(container, leaderboardCache.data);
         return;
@@ -746,7 +614,6 @@ export async function renderLeaderboard() {
         return;
     }
     
-    // Обнови кеша
     leaderboardCache.data = result.data;
     leaderboardCache.lastUpdate = now;
     
@@ -798,9 +665,5 @@ export function startBackgroundProcesses() {
     Game.intervals.effects = setInterval(checkActiveEffects, 10000);
 }
 
-// ==================== ЕКСПОРТИ ====================
+// ==================== ЕДИНСТВЕН ЕКСПОРТ ====================
 export { startFlightTimer, renderLeaderboard };
-
-// ==================== ПРЕМАХНАТИ ГЛОБАЛНИ ЕКСПОРТИ ====================
-// ВСИЧКИ window. ЕКСПОРТИ СА ПРЕМАХНАТИ - 
-// ВСИЧКО СЕ ОБРАБОТВА ЧРЕЗ data-action И EVENT DELEGATION
