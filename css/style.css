@@ -1,6 +1,161 @@
-/* ====== ДОБАВИ ТОВА В СЪЩЕСТВУВАЩИЯ CSS ====== */
+/* ====== CSS VARIABLES ====== */
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-card: #f8fafc;
+    --bg-indicator: #fef3c7;
+    --bg-event: #fff7ed;
+    --bg-input: #f8fafc;
+    
+    --text-primary: #0c4a6e;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    
+    --border-color: #e2e8f0;
+    --shadow-color: rgba(0,0,0,0.08);
+    --shadow-hover: rgba(245, 158, 11, 0.3);
+    
+    --primary: #f59e0b;
+    --primary-dark: #d97706;
+    --success: #10b981;
+    --danger: #ef4444;
+    --accent: #3b82f6;
+    --secondary: #64748b;
+    
+    --radius: 28px;
+    --radius-sm: 18px;
+    --radius-xs: 12px;
+    
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --z-base: 1;
+    --z-toast: 2000;
+    --z-modal: 3000;
+    --z-overlay: 9999;
+}
 
-/* ====== FOCUS VISIBLE - за навигация с клавиатура ====== */
+/* ====== DARK MODE ====== */
+body.dark-mode {
+    --bg-primary: #1e293b;
+    --bg-secondary: #334155;
+    --bg-tertiary: #475569;
+    --bg-card: #334155;
+    --bg-indicator: #1e3a5f;
+    --bg-event: #1e3a5f;
+    --bg-input: #334155;
+    
+    --text-primary: #f59e0b;
+    --text-secondary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-light: #64748b;
+    
+    --border-color: #475569;
+    --shadow-color: rgba(0,0,0,0.3);
+    --shadow-hover: rgba(245, 158, 11, 0.4);
+}
+
+/* ====== UTILITY ====== */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ====== BODY & LAYOUT ====== */
+body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    min-height: 100vh;
+    padding: 16px;
+    transition: background 0.3s, color 0.3s;
+}
+
+body.dark-mode {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.app {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.sidebar {
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    width: 280px;
+    box-shadow: 0 8px 20px var(--shadow-color);
+    height: fit-content;
+    transition: background 0.3s, color 0.3s;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 280px;
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 8px 20px var(--shadow-color);
+    transition: background 0.3s, color 0.3s;
+}
+
+/* ====== LOGO ====== */
+.logo {
+    text-align: center;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 10px;
+}
+
+.logo h2 {
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    transition: color 0.3s;
+}
+
+.logo p {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+/* ====== BUTTONS ====== */
+.btn {
+    background: linear-gradient(95deg, var(--primary), var(--primary-dark));
+    border: none;
+    padding: 8px 16px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: all var(--transition);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+    min-height: 38px;
+}
+
+.btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 30px rgba(245, 158, 11, 0.5);
+}
+
+.btn:active { transform: scale(0.94); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+.btn-danger { background: linear-gradient(95deg, var(--danger), #dc2626); }
+.btn-success { background: linear-gradient(95deg, var(--success), #059669); }
+.btn-secondary { background: linear-gradient(95deg, var(--secondary), #475569); }
+
 .btn:focus-visible,
 .nav-btn:focus-visible,
 select:focus-visible,
@@ -11,18 +166,474 @@ button:focus-visible {
     box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.2) !important;
 }
 
-/* ====== ПОДОБРЕН КОНТРАСТ ЗА ACHIEVEMENT-LOCKED ====== */
+/* ====== NAV BUTTONS ====== */
+.nav-btn {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: none;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all var(--transition);
+    border: 1px solid var(--border-color);
+    font-size: 14px;
+    min-height: 44px;
+    color: var(--text-secondary);
+}
+
+.nav-btn:hover {
+    transform: translateX(8px) scale(1.04);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+}
+
+.nav-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.nav-btn:active { transform: scale(0.95); }
+
+/* ====== CARDS ====== */
+.aircraft-card,
+.route-item,
+.achievement-card,
+.loan-card,
+.stat-box {
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.aircraft-card:hover,
+.route-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 35px var(--shadow-hover);
+    border-color: var(--primary);
+}
+
+.aircraft-card.selected {
+    border: 2px solid var(--primary);
+    background: #fffbeb;
+}
+body.dark-mode .aircraft-card.selected {
+    background: #1e3a5f;
+}
+
+/* ====== FLIGHT PULSE ====== */
+.route-item.active-flight {
+    position: relative;
+    border-color: var(--success);
+    overflow: hidden;
+}
+
+.route-item.active-flight::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--success);
+    animation: flightPulse 2s infinite ease-in-out;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+@keyframes flightPulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.02); opacity: 0; }
+}
+
+/* ====== STATUS BADGES ====== */
+.status-busy { background: var(--danger); color: white; border-radius: 20px; padding: 2px 10px; font-size: 11px; }
+.status-idle { background: var(--success); color: white; border-radius: 20px; padding: 2px 10px; font-size: 11px; }
+.status-maintenance { background: #8b5cf6; color: white; border-radius: 20px; padding: 2px 10px; font-size: 11px; }
+
+/* ====== INDICATORS ====== */
+.indicator-box {
+    background: var(--bg-indicator);
+    border-left: 3px solid var(--primary);
+    padding: 8px;
+    border-radius: var(--radius-xs);
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    transition: background 0.3s, color 0.3s;
+}
+
+.progress-bar {
+    background: var(--border-color);
+    border-radius: 20px;
+    height: 8px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+.progress-fill {
+    background: var(--primary);
+    width: 0%;
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.3s;
+    box-shadow: 0 0 8px var(--primary);
+}
+
+/* ====== STATS MINI ====== */
+.stats-mini {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+.stat-mini {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.stat-mini-value {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+/* ====== SCREENS ====== */
+.screen { display: none; animation: fadeIn 0.3s; }
+.screen.active { display: block; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+    font-size: 1.3rem;
+    transition: color 0.3s;
+}
+h3 {
+    color: var(--text-primary);
+    margin: 12px 0 8px 0;
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+/* ====== MAP ====== */
+#map {
+    height: 400px;
+    width: 100%;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    z-index: var(--z-base);
+}
+.map-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    align-items: center;
+}
+
+/* ====== LISTS ====== */
+.aircraft-list, .routes-list {
+    max-height: 450px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* ====== TOAST ====== */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1e293b;
+    color: var(--primary);
+    padding: 10px 20px;
+    border-radius: 60px;
+    z-index: var(--z-toast);
+    font-size: 13px;
+    animation: slideRight 0.3s, fadeOut 3s 2s forwards;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.toast.error {
+    background: #7f1a1a;
+    border-left: 4px solid var(--danger);
+    color: #fecaca;
+}
+@keyframes slideRight {
+    from { transform: translateX(100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeOut {
+    to { opacity: 0; visibility: hidden; }
+}
+
+/* ====== DIALOGS ====== */
+.dialog {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    padding: 20px;
+    z-index: var(--z-modal);
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    transition: background 0.3s, color 0.3s;
+}
+.dialog h3 {
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    transition: color 0.3s;
+}
+
+/* ====== EVENT ====== */
+.event-box {
+    background: var(--bg-event);
+    border-left: 4px solid var(--primary);
+    padding: 8px;
+    border-radius: 16px;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+.event-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ====== OVERVIEW ====== */
+.airline-name-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    transition: background 0.3s;
+}
+.airline-name-input {
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    width: 100%;
+    color: var(--text-primary);
+    transition: color 0.3s;
+}
+.airline-name-input:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.overview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.stat-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+    transition: background 0.3s;
+}
+.stat-card div:first-of-type {
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.quick-actions {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    padding: 16px;
+    transition: background 0.3s;
+}
+.how-to-play {
+    background: var(--bg-tertiary);
+    border-radius: 16px;
+    padding: 12px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: background 0.3s, color 0.3s;
+}
+.recent-routes { margin-top: 14px; }
+
+/* ====== STATISTICS ====== */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.stat-box .value {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--primary);
+}
+.stat-box .label {
+    font-size: 10px;
+    color: var(--text-muted);
+    transition: color 0.3s;
+}
+.route-rank {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: border-color 0.3s;
+}
+.rank-profit { font-weight: bold; color: var(--success); }
+.chart-bar {
+    background: var(--border-color);
+    border-radius: 10px;
+    height: 16px;
+    overflow: hidden;
+    margin: 4px 0;
+    transition: background 0.3s;
+}
+.chart-fill {
+    background: var(--primary);
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+}
+
+/* ====== FILTERS ====== */
+.filter-bar {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    color: var(--text-secondary);
+}
+.filter-select {
+    background: var(--bg-input);
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+.filter-select:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ====== SELECT & INPUT ====== */
+select, input {
+    background: var(--bg-input);
+    padding: 8px 12px;
+    border-radius: 40px;
+    border: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-secondary);
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+select:focus-visible, input:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ====== FLEX ====== */
+.flex-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ====== MISC ====== */
+.route-timer {
+    font-family: monospace;
+    font-weight: bold;
+    color: var(--primary);
+}
+.profit-preview {
+    margin-top: 10px;
+    padding: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 20px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: background 0.3s, color 0.3s;
+}
+.selection-info {
+    background: var(--bg-tertiary);
+    padding: 10px;
+    border-radius: 16px;
+    margin: 10px 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: background 0.3s, color 0.3s;
+}
+.github-link {
+    text-align: center;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    font-size: 11px;
+    color: var(--text-muted);
+    transition: border-color 0.3s, color 0.3s;
+}
+.github-link a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+.github-link a:hover { text-decoration: underline; }
+
+.gold-flash {
+    animation: goldFlash 0.4s;
+}
+@keyframes goldFlash {
+    50% { text-shadow: 0 0 20px var(--primary); transform: scale(1.05); }
+}
+
+/* ====== ACHIEVEMENTS ====== */
 .achievement-locked {
     opacity: 1 !important;
     filter: grayscale(0.6);
     background: var(--bg-tertiary) !important;
     border-color: var(--border-color) !important;
 }
-
 .achievement-locked strong {
     color: var(--text-muted) !important;
 }
-
 .achievement-locked .btn,
 .achievement-locked button {
     opacity: 0.4;
@@ -30,13 +641,39 @@ button:focus-visible {
     pointer-events: none;
 }
 
-/* ====== ПРЕМАХНИ СТАРИЯ .achievement-locked СТИЛ ====== */
-/* Старият .achievement-locked беше:
-   .achievement-locked {
-       opacity: 0.7;
-       filter: grayscale(0.5);
-   }
-   Този стил трябва да бъде премахнат или заменен с горния */
+.active-loan-display {
+    background: #fef3c7;
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 14px;
+    display: none;
+    transition: background 0.3s;
+}
+body.dark-mode .active-loan-display {
+    background: #1e3a5f;
+}
+
+.upgrade-panel {
+    margin-top: 16px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: none;
+    transition: background 0.3s;
+}
+body.dark-mode .upgrade-panel {
+    background: #334155 !important;
+}
+
+/* ====== CREDIT SCORE ====== */
+.credit-score-display {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 12px;
+    transition: background 0.3s;
+}
+
 /* ====== AUTH BAR ====== */
 .auth-bar {
     background: var(--bg-primary);
@@ -49,7 +686,6 @@ button:focus-visible {
     box-shadow: 0 4px 12px var(--shadow-color);
     transition: background 0.3s, color 0.3s;
 }
-
 .auth-bar-content {
     display: flex;
     justify-content: space-between;
@@ -57,7 +693,6 @@ button:focus-visible {
     flex-wrap: wrap;
     gap: 8px;
 }
-
 .auth-logo {
     display: flex;
     align-items: center;
@@ -66,18 +701,13 @@ button:focus-visible {
     font-size: 18px;
     color: var(--text-primary);
 }
-
-.auth-logo span:first-child {
-    font-size: 24px;
-}
-
+.auth-logo span:first-child { font-size: 24px; }
 .auth-forms {
     display: flex;
     gap: 6px;
     align-items: center;
     flex-wrap: wrap;
 }
-
 .auth-input {
     padding: 6px 12px;
     border-radius: 40px;
@@ -88,29 +718,22 @@ button:focus-visible {
     min-width: 140px;
     transition: background 0.3s, color 0.3s, border-color 0.3s;
 }
-
 .auth-input:focus {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
-
 .auth-user-info {
     display: none;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
 }
-
-.user-avatar {
-    font-size: 24px;
-}
-
+.user-avatar { font-size: 24px; }
 .user-email {
     font-weight: 500;
     color: var(--text-primary);
     font-size: 14px;
 }
-
 .online-badge {
     font-size: 12px;
     color: var(--success);
@@ -118,26 +741,93 @@ button:focus-visible {
     padding: 2px 10px;
     border-radius: 40px;
 }
-
 .auth-bar .btn-sm {
     padding: 4px 12px;
     font-size: 12px;
     min-height: 30px;
 }
 
+/* ====== TUTORIAL ====== */
+.tutorial-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: var(--z-overlay);
+    justify-content: center;
+    align-items: center;
+}
+.tutorial-content {
+    background: var(--bg-primary);
+    max-width: 500px;
+    width: 90%;
+    border-radius: var(--radius);
+    padding: 30px;
+    text-align: center;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    transition: background 0.3s;
+}
+.tutorial-content h3 { color: var(--text-primary); }
+.tutorial-content p {
+    margin: 16px 0;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+.tutorial-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+.tutorial-progress {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+/* ====== TOUCH ====== */
+* { touch-action: manipulation; }
+
+/* ====== MOBILE ====== */
 @media (max-width: 700px) {
+    .sidebar { width: 100%; }
+    .nav-btn { padding: 8px 10px; font-size: 13px; min-height: 44px; }
+    .btn { padding: 6px 12px; font-size: 12px; min-height: 38px; }
+    h2 { font-size: 1.1rem; }
+    .stats-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .stat-mini { padding: 2px 0; font-size: 14px; }
+    #map { height: 300px; }
+    .map-controls select { font-size: 14px; padding: 10px; }
+    .map-controls input[type="range"] { height: 30px; }
+    .dialog { width: 95%; max-height: 90vh; overflow-y: auto; }
+    .stat-box .value { font-size: 18px; }
+    .sidebar, .main-content { border-radius: 16px; }
+    .aircraft-list, .routes-list {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+    .nav-btn, .btn { min-height: 48px; touch-action: manipulation; }
+    .aircraft-card, .route-item { padding: 10px; }
+    .event-buttons .btn { font-size: 11px; padding: 4px 10px; }
+    
     .auth-bar-content {
         flex-direction: column;
         align-items: stretch;
     }
-    .auth-forms {
-        justify-content: center;
-    }
-    .auth-input {
-        min-width: 100px;
-        flex: 1;
-    }
-    .auth-user-info {
-        justify-content: center;
-    }
+    .auth-forms { justify-content: center; }
+    .auth-input { min-width: 100px; flex: 1; }
+    .auth-user-info { justify-content: center; }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+    .app { flex-direction: row; }
+    .sidebar { width: 45%; max-height: 90vh; overflow-y: auto; }
+    .main-content { width: 55%; }
+    #map { height: 250px; }
 }
