@@ -5,10 +5,11 @@ import {
     showToast, showConfirm, goldFlash, switchScreen, 
     refreshAll, updateLoanUI, updateSeasonUI, renderLoans,
     updateAircraftSelect, updateProfitPreview, updateSliderInfo,
-    renderAircrafts, renderRoutes, renderStatistics, renderAchievements
+    renderAircrafts, renderStatistics, renderAchievements
 } from './ui.js';
 import { AudioSystem } from './audio.js';
 import { openBuyMenu } from './airlines.js';
+import { renderRoutes } from './routes.js';
 import { startFlightTimer } from './routes.js';
 import { 
     auth, 
