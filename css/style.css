@@ -1,0 +1,143 @@
+/* ====== ДОБАВИ ТОВА В СЪЩЕСТВУВАЩИЯ CSS ====== */
+
+/* ====== FOCUS VISIBLE - за навигация с клавиатура ====== */
+.btn:focus-visible,
+.nav-btn:focus-visible,
+select:focus-visible,
+input:focus-visible,
+button:focus-visible {
+    outline: 3px solid var(--primary) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.2) !important;
+}
+
+/* ====== ПОДОБРЕН КОНТРАСТ ЗА ACHIEVEMENT-LOCKED ====== */
+.achievement-locked {
+    opacity: 1 !important;
+    filter: grayscale(0.6);
+    background: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.achievement-locked strong {
+    color: var(--text-muted) !important;
+}
+
+.achievement-locked .btn,
+.achievement-locked button {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ====== ПРЕМАХНИ СТАРИЯ .achievement-locked СТИЛ ====== */
+/* Старият .achievement-locked беше:
+   .achievement-locked {
+       opacity: 0.7;
+       filter: grayscale(0.5);
+   }
+   Този стил трябва да бъде премахнат или заменен с горния */
+/* ====== AUTH BAR ====== */
+.auth-bar {
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    margin-bottom: 16px;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: background 0.3s, color 0.3s;
+}
+
+.auth-bar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.auth-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.auth-logo span:first-child {
+    font-size: 24px;
+}
+
+.auth-forms {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.auth-input {
+    padding: 6px 12px;
+    border-radius: 40px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    font-size: 13px;
+    min-width: 140px;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.auth-input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.auth-user-info {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.user-avatar {
+    font-size: 24px;
+}
+
+.user-email {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.online-badge {
+    font-size: 12px;
+    color: var(--success);
+    background: rgba(16, 185, 129, 0.15);
+    padding: 2px 10px;
+    border-radius: 40px;
+}
+
+.auth-bar .btn-sm {
+    padding: 4px 12px;
+    font-size: 12px;
+    min-height: 30px;
+}
+
+@media (max-width: 700px) {
+    .auth-bar-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .auth-forms {
+        justify-content: center;
+    }
+    .auth-input {
+        min-width: 100px;
+        flex: 1;
+    }
+    .auth-user-info {
+        justify-content: center;
+    }
+}
