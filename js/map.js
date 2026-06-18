@@ -1,9 +1,9 @@
-import { Game, gameState, saveGame } from './game.js';
+import { Game, saveGame } from './game.js';
 import { DOM, updateHTML, showElement, hideElement } from './cache.js';
 import { getDistance, getMaxSlots, getCitySlotUsage, getSeasonBonus } from './utils.js';
 import { showToast, updateProfitPreview, updateHubButton, refreshAll } from './ui.js';
 import { AudioSystem } from './audio.js';
-import { checkAchievements } from './main.js';
+import { checkAchievements } from './state.js';
 
 // ==================== MAP ====================
 export function initMap() {
@@ -48,22 +48,23 @@ export function getCityColor(type) {
 
 export function updateMapMarkers() {
     if (!Game.map) return;
+    const state = Game.state;
     
     Object.values(Game.markers).forEach(m => Game.map.removeLayer(m));
     Game.markers = {};
     
     Game.cities.forEach(c => {
-        const used = getCitySlotUsage(c.id, gameState.routes);
+        const used = getCitySlotUsage(c.id, state.routes);
         const maxSlots = getMaxSlots(c.id);
         const seasonBonus = getSeasonBonus(c.id);
-        const hubBonus = (gameState.hubCity === c.id) ? '⭐ HUB +20%' : '';
+        const hubBonus = (state.hubCity === c.id) ? '⭐ HUB +20%' : '';
         
         const popup = `<b>${c.name}</b><br>
             Slots: ${used}/${maxSlots}<br>
             Level: ${c.level}<br>
             Season: ${(seasonBonus*100).toFixed(0)}%<br>
             ${hubBonus}<br>
-            <button class="btn btn-secondary" data-action="upgradeCity" data-id="${c.id}" ${gameState.money < c.upgradeCost ? 'disabled' : ''} 
+            <button class="btn btn-secondary" data-action="upgradeCity" data-id="${c.id}" ${state.money < c.upgradeCost ? 'disabled' : ''} 
                     style="font-size:11px; padding:4px 8px; min-height:24px;">
                 Upgrade (€${c.upgradeCost.toLocaleString()})
             </button>`;
@@ -84,14 +85,15 @@ export function updateMapMarkers() {
 }
 
 export function upgradeCity(cityId) {
+    const state = Game.state;
     const city = Game.cities.find(c => c.id === cityId);
     if (!city) return;
     
-    const currentUpgrade = gameState.cityUpgrades[cityId];
+    const currentUpgrade = state.cityUpgrades[cityId];
     const currentMaxSlots = currentUpgrade ? currentUpgrade.maxSlots : city.maxSlots;
     const cost = city.upgradeCost;
     
-    if (gameState.money < cost) {
+    if (state.money < cost) {
         showToast(`Need €${cost.toLocaleString()}`, true);
         return;
     }
@@ -113,13 +115,14 @@ export function upgradeCity(cityId) {
 
 export function confirmUpgradeCity() {
     if (!Game.pendingUpgrade) return;
+    const state = Game.state;
     const { cityId, newMaxSlots, cost, cityName, currentSlots } = Game.pendingUpgrade;
     
-    if (gameState.money >= cost) {
-        gameState.money -= cost;
-        if (!gameState.cityUpgrades) gameState.cityUpgrades = {};
-        const current = gameState.cityUpgrades[cityId] || { maxSlots: currentSlots, level: 0 };
-        gameState.cityUpgrades[cityId] = {
+    if (state.money >= cost) {
+        state.money -= cost;
+        if (!state.cityUpgrades) state.cityUpgrades = {};
+        const current = state.cityUpgrades[cityId] || { maxSlots: currentSlots, level: 0 };
+        state.cityUpgrades[cityId] = {
             maxSlots: newMaxSlots,
             level: (current.level || 0) + 1
         };
@@ -131,8 +134,8 @@ export function confirmUpgradeCity() {
             city.upgradeTo = Math.floor(city.upgradeTo * 1.3);
         }
         
-        if (!gameState.anyUpgrade) {
-            gameState.anyUpgrade = true;
+        if (!state.anyUpgrade) {
+            state.anyUpgrade = true;
             checkAchievements();
         }
         
@@ -199,12 +202,13 @@ export function clearMapSelection() {
 }
 
 export function setHub() {
+    const state = Game.state;
     if (!Game.selectedStart) {
         showToast('Select a start city first!', true);
         return;
     }
-    gameState.hubCity = Game.selectedStart.id;
-    gameState.hubSet = true;
+    state.hubCity = Game.selectedStart.id;
+    state.hubSet = true;
     Game.mapNeedsUpdate = true;
     updateMapMarkers();
     showToast(`⭐ ${Game.selectedStart.name} is now your hub! +20% demand.`);

@@ -1,4 +1,4 @@
-import { Game, gameState, saveGame } from './game.js';
+import { Game, saveGame } from './game.js';
 import { DOM, updateText, updateHTML, showElement, hideElement } from './cache.js';
 import { aircraftDB, aircraftUpgrades, achievementsDB } from './data.js';
 import { getDistance, getDemandKey, getSeasonBonus, getCurrentSeason, computeFlightProfit, updateCompanyLevel } from './utils.js';
@@ -89,7 +89,6 @@ export function switchScreen(id) {
     if (id === 'achievements') renderAchievements();
     if (id === 'loans') renderLoans();
     
-    // Само при отваряне на leaderboard се зарежда от Firebase
     if (id === 'leaderboard') {
         import('./main.js').then(module => {
             module.renderLeaderboard();
@@ -99,18 +98,19 @@ export function switchScreen(id) {
 
 // ==================== UPDATE FUNCTIONS ====================
 export function updateLoanUI() {
+    const state = Game.state;
     const ind = document.getElementById('loanIndicator');
-    if (gameState.loanActive && gameState.loanRemaining > 0) {
+    if (state.loanActive && state.loanRemaining > 0) {
         if (ind) ind.style.display = 'block';
-        updateText('loanRemaining', Math.floor(gameState.loanRemaining).toLocaleString());
+        updateText('loanRemaining', Math.floor(state.loanRemaining).toLocaleString());
     } else {
         if (ind) ind.style.display = 'none';
     }
     const ad = document.getElementById('activeLoanDisplay');
     if (ad) {
-        if (gameState.loanActive && gameState.loanRemaining > 0) {
+        if (state.loanActive && state.loanRemaining > 0) {
             ad.style.display = 'block';
-            updateText('activeLoanRemaining', Math.floor(gameState.loanRemaining).toLocaleString());
+            updateText('activeLoanRemaining', Math.floor(state.loanRemaining).toLocaleString());
         } else {
             ad.style.display = 'none';
         }
@@ -123,12 +123,13 @@ export function updateSeasonUI() {
 
 // ==================== STATISTICS ====================
 export function renderStatistics() {
-    updateText('statTotalFlights', gameState.totalFlights || 0);
-    updateText('statTotalDistance', `${(gameState.totalDistance || 0).toLocaleString()} km`);
+    const state = Game.state;
+    updateText('statTotalFlights', state.totalFlights || 0);
+    updateText('statTotalDistance', `${(state.totalDistance || 0).toLocaleString()} km`);
     
     let total = 0, bestProfit = 0, bestKey = null, arr = [];
-    for (let k in gameState.routeStats) {
-        const rs = gameState.routeStats[k];
+    for (let k in state.routeStats) {
+        const rs = state.routeStats[k];
         const avg = rs.totalProfit / rs.flights;
         total += rs.totalProfit;
         arr.push({ ...rs, avgProfit: avg, key: k });
@@ -138,15 +139,15 @@ export function renderStatistics() {
         }
     }
     
-    const avgProfit = gameState.totalFlights > 0 ? Math.floor(total / gameState.totalFlights) : 0;
+    const avgProfit = state.totalFlights > 0 ? Math.floor(total / state.totalFlights) : 0;
     updateText('statAvgProfit', `€${avgProfit.toLocaleString()}`);
     
-    if (bestKey && gameState.routeStats[bestKey]) {
-        updateText('statBestRoute', gameState.routeStats[bestKey].fromName + " → " + gameState.routeStats[bestKey].toName);
+    if (bestKey && state.routeStats[bestKey]) {
+        updateText('statBestRoute', state.routeStats[bestKey].fromName + " → " + state.routeStats[bestKey].toName);
         updateText('statBestProfit', `€${Math.floor(bestProfit).toLocaleString()}`);
     }
     
-    const efficiency = gameState.aircrafts.length > 0 ? Math.floor((gameState.aircrafts.filter(a => a.busy).length / gameState.aircrafts.length) * 100) : 0;
+    const efficiency = state.aircrafts.length > 0 ? Math.floor((state.aircrafts.filter(a => a.busy).length / state.aircrafts.length) * 100) : 0;
     updateText('statFleetEfficiency', `${efficiency}%`);
     
     arr.sort((a, b) => b.avgProfit - a.avgProfit);
@@ -191,8 +192,9 @@ export function renderStatistics() {
 export function renderAchievements() {
     const c = DOM.achievementsList;
     if (!c) return;
+    const state = Game.state;
     c.innerHTML = achievementsDB.map(ach => {
-        const unlocked = gameState.achievements.includes(ach.id);
+        const unlocked = state.achievements.includes(ach.id);
         return `<div class="achievement-card ${!unlocked ? 'achievement-locked' : ''}">
             <div>
                 <strong>${unlocked ? '🏆' : '🔒'} ${ach.name}</strong>
@@ -208,13 +210,14 @@ export function renderAchievements() {
 export function renderAircrafts() {
     const cont = DOM.aircraftListScreen;
     if (!cont) return;
+    const state = Game.state;
     
-    if (!gameState.aircrafts.length) {
+    if (!state.aircrafts.length) {
         cont.innerHTML = '<div style="padding:16px; text-align:center; color:var(--text-muted);">✈️ No aircraft. Buy first!</div>';
         return;
     }
     
-    let sorted = [...gameState.aircrafts];
+    let sorted = [...state.aircrafts];
     const sortBy = document.getElementById('fleetSort')?.value || 'name';
     const filterBy = document.getElementById('fleetFilter')?.value || 'all';
     
@@ -225,7 +228,7 @@ export function renderAircrafts() {
     if (sortBy === 'capacity') sorted.sort((a, b) => b.capacity - a.capacity);
     
     cont.innerHTML = sorted.map(ac => {
-        const isSelected = gameState.selectedAircraftUniqueId === ac.uniqueId;
+        const isSelected = state.selectedAircraftUniqueId === ac.uniqueId;
         let status = ac.busy ? 'BUSY' : 'IDLE';
         let statusClass = ac.busy ? 'status-busy' : 'status-idle';
         if (ac.maintenance) {
@@ -247,17 +250,19 @@ export function renderAircrafts() {
 }
 
 export function selectAircraft(uid) {
-    gameState.selectedAircraftUniqueId = uid;
+    const state = Game.state;
+    state.selectedAircraftUniqueId = uid;
     renderAircrafts();
-    const ac = gameState.aircrafts.find(a => a.uniqueId === uid);
+    const ac = state.aircrafts.find(a => a.uniqueId === uid);
     showToast(`Selected ${ac?.name}`);
 }
 
 export function updateAircraftSelect() {
     const sel = DOM.aircraftSelect;
     if (sel) {
+        const state = Game.state;
         sel.innerHTML = '<option value="">-- Select IDLE Aircraft --</option>' +
-            gameState.aircrafts.filter(ac => !ac.busy && !ac.maintenance)
+            state.aircrafts.filter(ac => !ac.busy && !ac.maintenance)
                 .map(ac => `<option value="${ac.uniqueId}">${ac.image} ${ac.name} (Cap:${ac.capacity} | Range:${ac.range}km)</option>`)
                 .join('');
     }
@@ -268,6 +273,7 @@ export function updateAircraftSelect() {
 export async function updateProfitPreview() {
     const pre = DOM.profitPreview;
     if (!pre) return;
+    const state = Game.state;
     
     if (!Game.selectedStart || !Game.selectedEnd) {
         pre.innerText = '💶 Select start and destination first';
@@ -278,7 +284,7 @@ export async function updateProfitPreview() {
         pre.innerText = '💶 Select an aircraft';
         return;
     }
-    const ac = gameState.aircrafts.find(a => a.uniqueId === aid);
+    const ac = state.aircrafts.find(a => a.uniqueId === aid);
     if (!ac) return;
     const dist = getDistance(Game.selectedStart, Game.selectedEnd);
     if (dist > ac.range) {
@@ -286,7 +292,7 @@ export async function updateProfitPreview() {
         return;
     }
     const dKey = getDemandKey(Game.selectedStart.id, Game.selectedEnd.id);
-    const demand = gameState.routeDemand[dKey]?.demand || 1.0;
+    const demand = state.routeDemand[dKey]?.demand || 1.0;
     const temp = {
         distance: dist,
         priceMultiplier: Game.routePriceMultiplier,
@@ -296,8 +302,8 @@ export async function updateProfitPreview() {
         airportFee: ac.airportFee,
         from: Game.selectedStart.id
     };
-    let profit = computeFlightProfit(temp, demand, gameState.fuelPrice);
-    if (gameState.loanActive && profit > 0) profit = Math.floor(profit * 0.5);
+    let profit = computeFlightProfit(temp, demand, state.fuelPrice);
+    if (state.loanActive && profit > 0) profit = Math.floor(profit * 0.5);
     pre.innerHTML = `💶 Expected: <strong style="color:var(--primary);">€${profit.toLocaleString()}</strong> (demand: ${(demand*100).toFixed(0)}%, season: ${(getSeasonBonus(Game.selectedStart.id)*100).toFixed(0)}%)`;
 }
 
@@ -309,7 +315,8 @@ export function updateSliderInfo() {
 
 // ==================== OVERVIEW ====================
 export function renderOverview() {
-    const recent = gameState.routes.slice(-3).reverse();
+    const state = Game.state;
+    const recent = state.routes.slice(-3).reverse();
     const c = DOM.recentRoutesList;
     if (c) {
         c.innerHTML = recent.length ?
@@ -325,15 +332,16 @@ export function renderOverview() {
 
 // ==================== REFRESH ====================
 export function refreshStats() {
-    const active = gameState.routes.filter(r => r.active && r.endTime > Date.now()).length;
-    updateText('miniMoney', `€${Math.floor(gameState.money).toLocaleString()}`);
-    updateText('miniPlanes', gameState.aircrafts.length);
+    const state = Game.state;
+    const active = state.routes.filter(r => r.active && r.endTime > Date.now()).length;
+    updateText('miniMoney', `€${Math.floor(state.money).toLocaleString()}`);
+    updateText('miniPlanes', state.aircrafts.length);
     updateText('miniRoutes', active);
-    updateText('miniFuel', `€${gameState.fuelPrice.toFixed(2)}`);
-    updateText('ovMoney', `€${Math.floor(gameState.money).toLocaleString()}`);
-    updateText('ovPlanes', gameState.aircrafts.length);
-    updateText('ovRoutes', gameState.routes.length);
-    updateText('ovRevenue', `€${Math.floor(gameState.totalRevenue).toLocaleString()}`);
+    updateText('miniFuel', `€${state.fuelPrice.toFixed(2)}`);
+    updateText('ovMoney', `€${Math.floor(state.money).toLocaleString()}`);
+    updateText('ovPlanes', state.aircrafts.length);
+    updateText('ovRoutes', state.routes.length);
+    updateText('ovRevenue', `€${Math.floor(state.totalRevenue).toLocaleString()}`);
 }
 
 export function refreshFleet() {
@@ -345,19 +353,18 @@ export function refreshRoutes() {
     import('./routes.js').then(module => module.renderRoutes());
 }
 
-// ==================== REFRESH MAP (с хеш проверка) ====================
+// ==================== REFRESH MAP ====================
 let lastMapHash = '';
 
 export function refreshMap() {
     if (!Game.mapNeedsUpdate) return;
+    const state = Game.state;
     
-    // Генериране на хеш на текущото състояние на картата
-    const routeHash = gameState.routes.map(r => `${r.from}-${r.to}-${r.active}`).join('|');
-    const hubHash = gameState.hubCity || 'none';
+    const routeHash = state.routes.map(r => `${r.from}-${r.to}-${r.active}`).join('|');
+    const hubHash = state.hubCity || 'none';
     const citiesHash = Game.cities.map(c => c.id).join(',');
     const currentHash = `${routeHash}|${hubHash}|${citiesHash}`;
     
-    // Проверка дали реално има промяна
     if (currentHash === lastMapHash) {
         Game.mapNeedsUpdate = false;
         return;
@@ -371,7 +378,7 @@ export function refreshMap() {
     });
 }
 
-// ==================== REFRESH UI (БЕЗ LEADERBOARD) ====================
+// ==================== REFRESH UI ====================
 export function refreshUI() {
     updateLoanUI();
     updateSeasonUI();
@@ -382,7 +389,6 @@ export function refreshUI() {
     renderAchievements();
     renderLoans();
     renderRouteAnalytics();
-    // Leaderboard се зарежда само при отваряне на екрана - ПРЕМАХНАТО
 }
 
 export function refreshAll() {

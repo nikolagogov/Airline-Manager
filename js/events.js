@@ -1,8 +1,8 @@
-import { Game, gameState, saveGame } from './game.js';
+import { Game, saveGame } from './game.js';
 import { DOM, showElement, hideElement } from './cache.js';
 import { showToast, refreshAll } from './ui.js';
 import { AudioSystem } from './audio.js';
-import { checkBankruptcy } from './main.js';
+import { checkBankruptcy } from './state.js';
 
 // ==================== EVENT DEFINITIONS ====================
 const EVENT_TEMPLATES = Object.freeze([
@@ -74,10 +74,11 @@ const EVENT_TEMPLATES = Object.freeze([
 
 // ==================== EVENTS 2.0 ====================
 export function triggerRandomEvent() {
-    if (gameState.pendingEvent) return;
+    const state = Game.state;
+    if (state.pendingEvent) return;
     
     const events = EVENT_TEMPLATES;
-    gameState.pendingEvent = events[Math.floor(Math.random() * events.length)];
+    state.pendingEvent = events[Math.floor(Math.random() * events.length)];
     const panel = DOM.eventPanel;
     if (!panel) return;
     
@@ -87,14 +88,14 @@ export function triggerRandomEvent() {
     
     const contentDiv = document.createElement('div');
     contentDiv.innerHTML = `
-        <strong>⚠️ ${gameState.pendingEvent.text}</strong>
-        <div style="font-size:11px; color:var(--text-muted);">${gameState.pendingEvent.description}</div>
+        <strong>⚠️ ${state.pendingEvent.text}</strong>
+        <div style="font-size:11px; color:var(--text-muted);">${state.pendingEvent.description}</div>
     `;
     fragment.appendChild(contentDiv);
     
     const btnDiv = document.createElement('div');
     btnDiv.className = 'event-buttons';
-    gameState.pendingEvent.options.forEach((opt, idx) => {
+    state.pendingEvent.options.forEach((opt, idx) => {
         const btn = document.createElement('button');
         btn.className = 'btn';
         btn.dataset.action = 'resolveEvent';
@@ -107,7 +108,7 @@ export function triggerRandomEvent() {
     
     const msgDiv = document.createElement('div');
     msgDiv.style.cssText = 'font-size:10px; color:var(--text-light); margin-top:4px;';
-    msgDiv.textContent = gameState.pendingEvent.options[0].effect.message || '';
+    msgDiv.textContent = state.pendingEvent.options[0].effect.message || '';
     fragment.appendChild(msgDiv);
     
     panel.innerHTML = '';
@@ -116,16 +117,17 @@ export function triggerRandomEvent() {
 }
 
 export function resolveEvent(idx) {
-    if (!gameState.pendingEvent) return;
-    const opt = gameState.pendingEvent.options[idx];
+    const state = Game.state;
+    if (!state.pendingEvent) return;
+    const opt = state.pendingEvent.options[idx];
     if (opt) {
-        if (!gameState.activeEffects) gameState.activeEffects = {};
+        if (!state.activeEffects) state.activeEffects = {};
         
         if (opt.effect.fuelMult) {
-            gameState.fuelPrice = Math.min(3.5, gameState.fuelPrice * opt.effect.fuelMult);
+            state.fuelPrice = Math.min(3.5, state.fuelPrice * opt.effect.fuelMult);
             if (opt.effect.duration) {
                 const key = 'fuelMult_' + Date.now();
-                gameState.activeEffects[key] = {
+                state.activeEffects[key] = {
                     type: 'fuelMult',
                     value: opt.effect.fuelMult,
                     endTime: Date.now() + opt.effect.duration,
@@ -134,17 +136,17 @@ export function resolveEvent(idx) {
             }
         }
         if (opt.effect.penalty) {
-            gameState.money = Math.max(0, gameState.money + opt.effect.penalty);
+            state.money = Math.max(0, state.money + opt.effect.penalty);
             showToast(`Cost: €${Math.abs(opt.effect.penalty)}`, true);
             AudioSystem.play('error');
         }
         if (opt.effect.demandBoost) {
-            for (let k in gameState.routeDemand) {
-                gameState.routeDemand[k].demand = Math.min(1.0, gameState.routeDemand[k].demand * opt.effect.demandBoost);
+            for (let k in state.routeDemand) {
+                state.routeDemand[k].demand = Math.min(1.0, state.routeDemand[k].demand * opt.effect.demandBoost);
             }
             if (opt.effect.duration) {
                 const key = 'demandBoost_' + Date.now();
-                gameState.activeEffects[key] = {
+                state.activeEffects[key] = {
                     type: 'demandBoost',
                     value: opt.effect.demandBoost,
                     endTime: Date.now() + opt.effect.duration,
@@ -154,10 +156,10 @@ export function resolveEvent(idx) {
             showToast(`Demand increased!`);
         }
         if (opt.effect.discount) {
-            gameState.discountPercent = opt.effect.discount;
+            state.discountPercent = opt.effect.discount;
             if (opt.effect.duration) {
                 const key = 'discount_' + Date.now();
-                gameState.activeEffects[key] = {
+                state.activeEffects[key] = {
                     type: 'discount',
                     value: opt.effect.discount,
                     endTime: Date.now() + opt.effect.duration,
@@ -168,7 +170,7 @@ export function resolveEvent(idx) {
         }
         if (opt.effect.fuelEfficiencyBonus) {
             const key = 'fuelEfficiency_' + Date.now();
-            gameState.activeEffects[key] = {
+            state.activeEffects[key] = {
                 type: 'fuelEfficiencyBonus',
                 value: opt.effect.fuelEfficiencyBonus,
                 endTime: Date.now() + opt.effect.duration,
@@ -177,14 +179,14 @@ export function resolveEvent(idx) {
             showToast(`Fuel efficiency improved!`);
         }
         if (opt.effect.bonus) {
-            gameState.money += opt.effect.bonus;
+            state.money += opt.effect.bonus;
             showToast(`Bonus: €${opt.effect.bonus}`);
             AudioSystem.play('money');
         }
         saveGame();
         refreshAll();
     }
-    gameState.pendingEvent = null;
+    state.pendingEvent = null;
     const panel = DOM.eventPanel;
     if (panel) panel.style.display = 'none';
     checkBankruptcy();

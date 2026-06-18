@@ -1,4 +1,4 @@
-import { Game, gameState, saveGame } from './game.js';
+import { Game, saveGame } from './game.js';
 import { DOM } from './cache.js';
 import { showToast, showConfirm, refreshAll, updateLoanUI } from './ui.js';
 import { AudioSystem } from './audio.js';
@@ -35,20 +35,21 @@ function getScoreFromThresholds(value, thresholds) {
 }
 
 export function getCreditScore() {
+    const state = Game.state;
     let score = 0;
     
-    score += getScoreFromThresholds(gameState.totalRevenue, REVENUE_THRESHOLDS);
-    score += getScoreFromThresholds(gameState.totalFlights, FLIGHT_THRESHOLDS);
-    score += getScoreFromThresholds(gameState.aircrafts.length, FLEET_THRESHOLDS);
-    score += Math.min(20, gameState.companyLevel * 2);
+    score += getScoreFromThresholds(state.totalRevenue, REVENUE_THRESHOLDS);
+    score += getScoreFromThresholds(state.totalFlights, FLIGHT_THRESHOLDS);
+    score += getScoreFromThresholds(state.aircrafts.length, FLEET_THRESHOLDS);
+    score += Math.min(20, state.companyLevel * 2);
     
-    if (gameState.loanActive) {
+    if (state.loanActive) {
         score = Math.max(0, score - 30);
-        if (gameState.loanRemaining > 50000) score = Math.max(0, score - 20);
+        if (state.loanRemaining > 50000) score = Math.max(0, score - 20);
     }
     
-    if (gameState.prestigeLevel > 0) {
-        score += gameState.prestigeLevel * 5;
+    if (state.prestigeLevel > 0) {
+        score += state.prestigeLevel * 5;
     }
     
     return Math.min(100, Math.max(0, score));
@@ -71,13 +72,14 @@ export function getLoanCooldown() {
 }
 
 export function getAvailableLoans() {
+    const state = Game.state;
     const score = getCreditScore();
     const maxLoans = getMaxActiveLoans();
-    const activeLoans = gameState.loanActive ? 1 : 0;
+    const activeLoans = state.loanActive ? 1 : 0;
     
     const loans = [];
     
-    if (!gameState.loanActive) {
+    if (!state.loanActive) {
         loans.push({
             amount: 10000,
             repayment: 13000,
@@ -139,11 +141,12 @@ export function getAvailableLoans() {
 export function renderLoans() {
     const c = DOM.availableLoansList;
     if (!c) return;
+    const state = Game.state;
     
     const score = getCreditScore();
     const maxLoans = getMaxActiveLoans();
-    const activeLoans = gameState.loanActive ? 1 : 0;
-    const cooldown = gameState.loanCooldown || 0;
+    const activeLoans = state.loanActive ? 1 : 0;
+    const cooldown = state.loanCooldown || 0;
     const isOnCooldown = Date.now() < cooldown;
     const cooldownRemaining = isOnCooldown ? Math.ceil((cooldown - Date.now()) / 1000) : 0;
     
@@ -190,7 +193,7 @@ export function renderLoans() {
         fragment.appendChild(emptyDiv);
     } else {
         loans.forEach(loan => {
-            const canTake = !gameState.loanActive && getCreditScore() >= loan.minScore && !isOnCooldown && activeLoans < maxLoans;
+            const canTake = !state.loanActive && getCreditScore() >= loan.minScore && !isOnCooldown && activeLoans < maxLoans;
             const card = document.createElement('div');
             card.className = 'loan-card';
             card.style.borderLeft = `4px solid ${canTake ? 'var(--success)' : 'var(--danger)'}`;
@@ -224,13 +227,14 @@ export function renderLoans() {
 
 // ==================== TAKE LOAN ====================
 export async function takeLoan(amount, repaymentAmount) {
-    if (gameState.loanActive) {
+    const state = Game.state;
+    if (state.loanActive) {
         showToast('You already have an active loan!', true);
         return;
     }
     
     const maxLoans = getMaxActiveLoans();
-    const activeLoans = gameState.loanActive ? 1 : 0;
+    const activeLoans = state.loanActive ? 1 : 0;
     if (activeLoans >= maxLoans) {
         showToast('Maximum active loans reached!', true);
         return;
@@ -244,7 +248,7 @@ export async function takeLoan(amount, repaymentAmount) {
         return;
     }
     
-    const cooldown = gameState.loanCooldown || 0;
+    const cooldown = state.loanCooldown || 0;
     if (Date.now() < cooldown) {
         const remaining = Math.ceil((cooldown - Date.now()) / 1000);
         showToast(`Please wait ${remaining}s before taking another loan.`, true);
@@ -256,19 +260,19 @@ export async function takeLoan(amount, repaymentAmount) {
     );
     
     if (confirmed) {
-        gameState.money += amount;
-        gameState.loanActive = true;
-        gameState.loanRemaining = Math.round(repaymentAmount * 100) / 100; // Защита от плаваща запетая
+        state.money += amount;
+        state.loanActive = true;
+        state.loanRemaining = Math.round(repaymentAmount * 100) / 100;
         
-        gameState.loanHistory = gameState.loanHistory || [];
-        gameState.loanHistory.push({
+        state.loanHistory = state.loanHistory || [];
+        state.loanHistory.push({
             amount: amount,
             repayment: repaymentAmount,
             takenAt: Date.now(),
             repaid: false
         });
         
-        gameState.loanCooldown = Date.now() + getLoanCooldown();
+        state.loanCooldown = Date.now() + getLoanCooldown();
         
         saveGame();
         refreshAll();
@@ -278,32 +282,32 @@ export async function takeLoan(amount, repaymentAmount) {
     }
 }
 
-// ==================== LOAN REPAYMENT (с защита от плаваща запетая) ====================
+// ==================== LOAN REPAYMENT ====================
 export function applyLoanRepayment(profit) {
-    if (!gameState.loanActive || gameState.loanRemaining <= 0) return profit;
+    const state = Game.state;
+    if (!state.loanActive || state.loanRemaining <= 0) return profit;
     
     let repayment = Math.floor(profit * 0.5);
-    if (repayment > gameState.loanRemaining) repayment = gameState.loanRemaining;
-    gameState.loanRemaining -= repayment;
+    if (repayment > state.loanRemaining) repayment = state.loanRemaining;
+    state.loanRemaining -= repayment;
     
-    // Защита от плаваща запетая
-    if (gameState.loanRemaining < 1) {
-        gameState.loanRemaining = 0;
+    if (state.loanRemaining < 1) {
+        state.loanRemaining = 0;
     }
     
-    if (gameState.loanRemaining <= 0) {
-        gameState.loanActive = false;
-        gameState.loanRemaining = 0;
+    if (state.loanRemaining <= 0) {
+        state.loanActive = false;
+        state.loanRemaining = 0;
         
-        if (gameState.loanHistory) {
-            const lastLoan = gameState.loanHistory.find(l => !l.repaid);
+        if (state.loanHistory) {
+            const lastLoan = state.loanHistory.find(l => !l.repaid);
             if (lastLoan) {
                 lastLoan.repaid = true;
                 lastLoan.repaidAt = Date.now();
             }
         }
         
-        gameState.loanCooldown = Date.now() + getLoanCooldown();
+        state.loanCooldown = Date.now() + getLoanCooldown();
         
         showToast(`🎉 Loan fully repaid! Next loan available in ${Math.ceil(getLoanCooldown()/1000)}s.`);
         updateLoanUI();
