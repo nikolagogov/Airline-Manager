@@ -1,19 +1,31 @@
+// ВАЖНО: Leaflet се зарежда глобално в window
 const L = window.L;
-console.log("Leaflet L object:", L); // Ако това е undefined, значи скриптът не се зарежда правилно
-import { Game, saveGame } from './game.js';
-import { DOM, updateHTML, showElement, hideElement } from './cache.js';
-import { getDistance, getMaxSlots, getCitySlotUsage, getSeasonBonus } from './utils.js';
-import { showToast, updateProfitPreview, updateHubButton, refreshAll } from './ui.js';
-import { AudioSystem } from './audio.js';
-import { checkAchievements } from './state.js';
+
+import { Game } from './game.js';
+import { updateMapMarkers } from './map.js';
 
 // ==================== MAP ====================
 export function initMap() {
-    if (Game.map) return;
+    // 1. Проверка за Leaflet
+    if (!L) {
+        console.error("Leaflet (L) не е намерен!");
+        return;
+    }
+    
+    // 2. Предотвратяване на двойна инициализация
+    if (Game.map) {
+        // Ако вече съществува, просто я преоразмери
+        setTimeout(() => Game.map.invalidateSize(), 100);
+        return;
+    }
     
     const mapContainer = document.getElementById('map');
-    const isVisible = mapContainer && mapContainer.offsetParent !== null;
-    
+    if (!mapContainer) {
+        console.error("Map container #map not found!");
+        return;
+    }
+
+    // 3. Инициализация
     Game.map = L.map('map', {
         tap: true,
         touchZoom: true,
@@ -29,17 +41,21 @@ export function initMap() {
         attribution: '© OSM'
     }).addTo(Game.map);
     
-    if (!isVisible) {
-        const observer = new ResizeObserver(() => {
-            if (mapContainer && mapContainer.offsetParent !== null) {
-                Game.map.invalidateSize();
-                observer.disconnect();
-            }
-        });
-        observer.observe(mapContainer);
-    }
+    // 4. Подсигуряване на размера при видимост
+    const observer = new ResizeObserver(() => {
+        if (Game.map) {
+            Game.map.invalidateSize();
+        }
+    });
+    observer.observe(mapContainer);
     
+    // 5. Първоначално обновяване
     updateMapMarkers();
+    
+    // Една лека пауза, за да се гарантира, че контейнерът е нарисуван в DOM
+    setTimeout(() => {
+        if (Game.map) Game.map.invalidateSize();
+    }, 300);
 }
 
 export function getCityColor(type) {
