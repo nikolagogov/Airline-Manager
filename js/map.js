@@ -1,3 +1,5 @@
+const L = window.L;
+console.log("Leaflet L object:", L); // Ако това е undefined, значи скриптът не се зарежда правилно
 import { Game, saveGame } from './game.js';
 import { DOM, updateHTML, showElement, hideElement } from './cache.js';
 import { getDistance, getMaxSlots, getCitySlotUsage, getSeasonBonus } from './utils.js';
