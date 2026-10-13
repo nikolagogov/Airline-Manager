@@ -78,22 +78,40 @@ export function goldFlash(id) {
 }
 
 // ==================== SCREEN SWITCH ====================
+
 export function switchScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(`screen-${id}`);
-    if (target) target.classList.add('active');
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    const activeBtn = document.querySelector(`.nav-btn[data-screen="${id}"]`);
+    if (!target) return;
+
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    target.classList.add('active');
+
+    document.querySelectorAll('.nav-btn').forEach(button => {
+        button.classList.remove('active');
+    });
+
+    const activeBtn = document.querySelector(
+        `.nav-btn[data-screen="${id}"]`
+    );
     if (activeBtn) activeBtn.classList.add('active');
-    
+
+    // Remember the selected screen in the URL.
+    if (location.hash !== `#${id}`) {
+        history.replaceState(null, '', `#${id}`);
+    }
+
     if (id === 'stats') renderStatistics();
     if (id === 'achievements') renderAchievements();
     if (id === 'loans') renderLoans();
-    
+
     if (id === 'leaderboard') {
-        import('./main.js').then(module => {
-            module.renderLeaderboard();
-        });
+        import('./main.js')
+            .then(module => module.renderLeaderboard())
+            .catch(error => {
+                console.error('Leaderboard error:', error);
+            });
     }
 }
 
