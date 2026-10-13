@@ -492,9 +492,10 @@ function setupAuthUI() {
     const displayNameInput = document.getElementById('authDisplayName');
     const publicDisplayNameInput = document.getElementById('publicDisplayName');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
-    
-const profileToggle = document.getElementById('profileToggle');
-const profileMenu = document.getElementById('profileMenu');
+    const profileToggle = document.getElementById('profileToggle');
+    const profileMenu = document.getElementById('profileMenu');
+    const profileMenuName = document.getElementById('profileMenuName');
+    const profileCloudStatus = document.getElementById('profileCloudStatus');
 
 profileToggle?.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -654,6 +655,31 @@ profileToggle?.setAttribute('aria-expanded', 'false');
     
     emailInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn?.click(); });
     passwordInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn?.click(); });
+}
+
+
+function updateProfileStats() {
+    const state = Game.state;
+    if (!state) return;
+
+    const revenue = Number(state.totalRevenue) || 0;
+    const flights = Number(state.totalFlights) || 0;
+    const aircraft = Array.isArray(state.aircrafts)
+        ? state.aircrafts.length
+        : 0;
+    const level = Number(state.companyLevel) || 1;
+
+    const revenueEl = document.getElementById('profileRevenue');
+    const flightsEl = document.getElementById('profileFlights');
+    const aircraftEl = document.getElementById('profileAircraft');
+    const levelEl = document.getElementById('profileLevel');
+
+    if (revenueEl) {
+        revenueEl.textContent = '€' + revenue.toLocaleString();
+    }
+    if (flightsEl) flightsEl.textContent = String(flights);
+    if (aircraftEl) aircraftEl.textContent = String(aircraft);
+    if (levelEl) levelEl.textContent = String(level);
 }
 
 // ==================== DARK MODE ====================
