@@ -833,21 +833,25 @@ body.dark-mode .upgrade-panel {
 }
 
 /* Profile dropdown */
+
 .profile-dropdown {
     position: relative;
+    display: inline-flex;
+    align-items: center;
 }
 
 .profile-toggle {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    border: 0;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 10px;
     background: transparent;
     color: inherit;
     font: inherit;
     cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 10px;
+    white-space: nowrap;
 }
 
 .profile-toggle:hover {
@@ -855,9 +859,24 @@ body.dark-mode .upgrade-panel {
 }
 
 .profile-menu {
-    display: flex;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 9999;
+    width: 240px;
+    box-sizing: border-box;
+    padding: 16px;
+    background: #fff;
+    color: #1f2937;
+    border: 1px solid #dbe3ed;
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
     flex-direction: column;
     gap: 10px;
+}
+
+.profile-menu:not([hidden]) {
+    display: flex;
 }
 
 .profile-menu[hidden] {
@@ -870,9 +889,9 @@ body.dark-mode .upgrade-panel {
 }
 
 .profile-menu .auth-input {
-    box-sizing: border-box;
     width: 100%;
     min-width: 0;
+    box-sizing: border-box;
 }
 
 .profile-menu .btn {
