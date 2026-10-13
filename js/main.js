@@ -332,7 +332,27 @@ switchScreen(initialScreen);
 }
 
 async function saveLeaderboardScore() {
-    
+    const user = auth.currentUser;
+
+    if (!user || !Game.state) return;
+
+    const displayName =
+        user.displayName ||
+        user.email?.split('@')[0] ||
+        Game.state.airlineName ||
+        'Anonymous';
+
+    const result = await saveToLeaderboard(
+        user.uid,
+        displayName,
+        Game.state
+    );
+
+    if (!result.success) {
+        console.error('Leaderboard save failed:', result.error);
+    }
+}
+
 export async function renderLeaderboard() {
     const container = document.getElementById('leaderboardList');
 
@@ -430,27 +450,7 @@ export async function renderLeaderboard() {
         container.textContent = 'An error occurred while loading the leaderboard.';
     }
 }
-    const user = auth.currentUser;
-
-    if (!user || !Game.state) return;
-
-    const displayName =
-        user.displayName ||
-        user.email?.split('@')[0] ||
-        Game.state.airlineName ||
-        'Anonymous';
-
-    const result = await saveToLeaderboard(
-        user.uid,
-        displayName,
-        Game.state
-    );
-
-    if (!result.success) {
-        console.error('Leaderboard save failed:', result.error);
-    }
-}
-
+    
 // ==================== RENDER UI ====================
 function renderUI() {
     renderAircrafts();
