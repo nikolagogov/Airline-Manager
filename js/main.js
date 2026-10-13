@@ -27,27 +27,51 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupAuthAndGame() {
-    const unsubscribe = onAuthChange(async (user) => {
-        unsubscribe();
-        
-        // Load game - правилна инициализация!
-        const saved = loadGameFromStorage();
-        Game.state = Object.assign(getDefaultState(), saved || {});
-        Game.cities = [...baseCities];
-        
-        // Load cloud save if logged in
-        if (user) {
+    // 1. Показваме играта веднага от локалния запис.
+    const saved = loadGameFromStorage();
+
+    Game.state = Object.assign(getDefaultState(), saved || {});
+    Game.cities = [...baseCities];
+
+    setupEvents();
+    loadGame();
+    renderUI();
+
+    // 2. Проверяваме Firebase на заден план.
+    let authInitialized = false;
+    let unsubscribeAuth = () => {};
+
+    unsubscribeAuth = onAuthChange(async (user) => {
+        if (authInitialized) return;
+
+        authInitialized = true;
+        unsubscribeAuth();
+
+        // Ако няма влязъл потребител, локалната игра вече работи.
+        if (!user) return;
+
+        try {
             const result = await loadGameFromCloud(user.uid);
+
             if (result.success && result.data) {
+                // Обновяваме играта с облачния запис.
                 Object.assign(Game.state, result.data);
+
+                if (DOM.airlineNameInput) {
+                    DOM.airlineNameInput.value =
+                        Game.state.airlineName || '';
+                }
+
+                refreshAll();
+                renderUI();
+                updateLoanUI();
+                updateSeasonUI();
+
                 showToast('☁️ Cloud save loaded!');
             }
+        } catch (error) {
+            console.error('Cloud save loading failed:', error);
         }
-        
-        // Setup events
-        setupEvents();
-        loadGame();
-        renderUI();
     });
 }
 
