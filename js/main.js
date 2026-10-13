@@ -287,7 +287,17 @@ function loadGame() {
     checkTutorial();
     checkBankruptcy();
     
-    if (document.querySelector('[data-screen]')) switchScreen('overview');
+    const validScreens = [
+    'overview', 'fleet', 'map', 'routes',
+    'stats', 'achievements', 'loans', 'leaderboard'
+];
+
+const requestedScreen = location.hash.slice(1);
+const initialScreen = validScreens.includes(requestedScreen)
+    ? requestedScreen
+    : 'overview';
+
+switchScreen(initialScreen);
 }
 
 // ==================== RENDER UI ====================
