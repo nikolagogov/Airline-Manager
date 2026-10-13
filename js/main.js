@@ -17,7 +17,9 @@ import {
     loadGameFromCloud,
     getAuthState,
     saveToLeaderboard,
-    loadLeaderboard
+    loadLeaderboard,
+    savePublicProfile,
+    loadPublicProfile
 } from './firebase.js';
 import { checkBankruptcy } from './state.js';
 
@@ -331,27 +333,41 @@ const initialScreen = validScreens.includes(requestedScreen)
 switchScreen(initialScreen);
 }
 
-async function saveLeaderboardScore() {
-    const user = auth.currentUser;
 
-    if (!user || !Game.state) return;
-
-    const displayName =
-        user.displayName ||
-        user.email?.split('@')[0] ||
-        Game.state.airlineName ||
-        'Anonymous';
-
-    const result = await saveToLeaderboard(
-        user.uid,
-        displayName,
-        Game.state
-    );
-
-    if (!result.success) {
-        console.error('Leaderboard save failed:', result.error);
+    async function saveLeaderboardScore() {
+        const user = auth.currentUser;
+    
+        if (!user || !Game.state) return;
+    
+        const profile = await loadPublicProfile(user.uid);
+    
+        let displayName = profile.success
+            ? profile.data?.displayName
+            : null;
+    
+        if (!displayName) {
+            displayName = user.displayName || 'Player';
+    
+            const saveResult = await savePublicProfile(
+                user.uid,
+                displayName
+            );
+    
+            if (!saveResult.success) {
+                console.error('Profile initialization failed:', saveResult.error);
+            }
+        }
+    
+        const result = await saveToLeaderboard(
+            user.uid,
+            displayName,
+            Game.state
+        );
+    
+        if (!result.success) {
+            console.error('Leaderboard save failed:', result.error);
+        }
     }
-}
 
 export async function renderLeaderboard() {
     const container = document.getElementById('leaderboardList');
@@ -473,11 +489,29 @@ function setupAuthUI() {
     const logoutBtn = document.getElementById('authLogoutBtn');
     const emailInput = document.getElementById('authEmail');
     const passwordInput = document.getElementById('authPassword');
+    const displayNameInput = document.getElementById('authDisplayName');
+    const publicDisplayNameInput = document.getElementById('publicDisplayName');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
     
     loginBtn?.addEventListener('click', async () => {
         const email = emailInput?.value?.trim();
         const password = passwordInput?.value?.trim();
-        if (!email || !password) { showToast('Please enter email and password', true); return; }
+        const displayName = displayNameInput?.value?.trim();
+        
+        if (!displayName) {
+            showToast('Please enter a public name', true);
+            return;
+        }
+        
+        if (displayName.length > 30) {
+            showToast('Name must be 30 characters or less', true);
+            return;
+        }
+        
+        if (!email || !password) {
+            showToast('Please enter email and password', true);
+            return;
+        }
         const { loginUser } = await import('./firebase.js');
         const result = await loginUser(email, password);
         if (result.success) {
@@ -495,7 +529,7 @@ function setupAuthUI() {
         if (!email || !password) { showToast('Please enter email and password', true); return; }
         if (password.length < 6) { showToast('Password must be at least 6 characters', true); return; }
         const { registerUser } = await import('./firebase.js');
-        const result = await registerUser(email, password);
+        const result = await registerUser(email, password, displayName);
         if (result.success) {
             showToast('✅ Registered!');
             emailInput.value = '';
@@ -517,13 +551,54 @@ function setupAuthUI() {
         await logoutUser();
         showToast('Logged out');
     });
+
+    saveProfileBtn?.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        const displayName = publicDisplayNameInput?.value?.trim();
+    
+        if (!user) {
+            showToast('Please log in first.', true);
+            return;
+        }
+    
+        if (!displayName || displayName.length > 30) {
+            showToast('Enter a name up to 30 characters.', true);
+            return;
+        }
+    
+        const result = await savePublicProfile(user.uid, displayName);
+    
+        if (result.success) {
+            showToast('Public name updated!');
+            if (userEmailEl) {
+                userEmailEl.textContent = displayName;
+            }
+            await saveLeaderboardScore();
+        } else {
+            showToast('Could not save name: ' + result.error, true);
+        }
+    });
     
     onAuthChange(async (user) => {
         const state = getAuthState(user);
         if (state.isLoggedIn) {
             authForms.style.display = 'none';
             authUserInfo.style.display = 'flex';
-            userEmailEl.textContent = state.email;
+            const profile = await loadPublicProfile(user.uid);
+
+            const publicName = profile.success
+                ? profile.data?.displayName
+                : null;
+            
+            if (userEmailEl) {
+                userEmailEl.textContent =
+                    publicName || user.displayName || 'Player';
+            }
+            
+            if (publicDisplayNameInput) {
+                publicDisplayNameInput.value =
+                    publicName || user.displayName || '';
+            }
             if (onlineBadge) onlineBadge.textContent = '● Online';
         } else {
             authForms.style.display = 'flex';
