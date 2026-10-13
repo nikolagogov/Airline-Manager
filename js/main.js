@@ -65,9 +65,7 @@ function setupAuthAndGame() {
                 refreshAll();
                 renderUI();
                 updateLoanUI();
-                updateSeasonUI();
-
-                showToast('☁️ Cloud save loaded!');
+                updateSeasonUI();               
             }
         } catch (error) {
             console.error('Cloud save loading failed:', error);
