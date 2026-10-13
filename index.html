@@ -69,22 +69,40 @@
             </div>
             
             <!-- Когато ИМА логнат потребител -->
-            <div id="authUserInfo" class="auth-user-info" style="display:none;">
-                <span class="user-avatar">👤</span>
-                <span class="user-email" id="authUserEmail">user@email.com</span>
-                <input
-                    type="text"
-                    id="publicDisplayName"
-                    placeholder="Public player name"
-                    class="auth-input"
-                    maxlength="30"
-                />
-                <button class="btn btn-sm btn-success" id="saveProfileBtn">
-                    Save name
-                </button>
-                <span class="online-badge">● Online</span>
-                <button class="btn btn-sm btn-danger" id="authLogoutBtn">Logout</button>
-            </div>
+            
+<div id="authUserInfo" class="auth-user-info" style="display:none;">
+    <div class="profile-dropdown">
+        <button
+            type="button"
+            id="profileToggle"
+            class="profile-toggle"
+            aria-expanded="false"
+            aria-controls="profileMenu"
+        >
+            <span class="user-avatar">👤</span>
+            <span class="user-email" id="authUserEmail">Player</span>
+            <span aria-hidden="true">▾</span>
+        </button>
+
+        <div id="profileMenu" class="profile-menu" hidden>
+            <label for="publicDisplayName">Public player name</label>
+            <input
+                type="text"
+                id="publicDisplayName"
+                placeholder="Public player name"
+                class="auth-input"
+                maxlength="30"
+            />
+            <button class="btn btn-sm btn-success" id="saveProfileBtn">
+                Save name
+            </button>
+        </div>
+    </div>
+
+    <span class="online-badge">● Online</span>
+    <button class="btn btn-sm btn-danger" id="authLogoutBtn">Logout</button>
+</div>
+
         </div>
     </div>
     
