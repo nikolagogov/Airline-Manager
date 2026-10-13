@@ -77,20 +77,53 @@
             <span aria-hidden="true">▾</span>
         </button>
 
-        <div id="profileMenu" class="profile-menu" hidden>
-            <label for="publicDisplayName">Public player name</label>
-            <input
-                type="text"
-                id="publicDisplayName"
-                placeholder="Public player name"
-                class="auth-input"
-                maxlength="30"
-            />
-            <button class="btn btn-sm btn-success" id="saveProfileBtn">
-                Save name
-            </button>
-        </div>
+                <div id="profileMenu" class="profile-menu" hidden>
+            <div class="profile-summary">
+    <div class="profile-summary-avatar">👤</div>
+    <div>
+        <strong id="profileMenuName">Player</strong>
+        <div class="profile-subtitle">Airline Manager pilot</div>
     </div>
+</div>
+
+<div class="profile-section">
+    <label for="publicDisplayName">Public player name</label>
+    <input
+        type="text"
+        id="publicDisplayName"
+        class="auth-input"
+        maxlength="30"
+        placeholder="Public player name"
+    />
+    <button class="btn btn-sm btn-success" id="saveProfileBtn">
+        Save name
+    </button>
+</div>
+
+<div class="profile-section">
+    <strong>☁️ Cloud save</strong>
+    <div id="profileCloudStatus">Checking...</div>
+</div>
+
+<div class="profile-section">
+    <strong>🏆 My results</strong>
+    <div class="profile-stat">
+        <span>Total revenue</span>
+        <strong id="profileRevenue">€0</strong>
+    </div>
+    <div class="profile-stat">
+        <span>Flights</span>
+        <strong id="profileFlights">0</strong>
+    </div>
+    <div class="profile-stat">
+        <span>Aircraft</span>
+        <strong id="profileAircraft">0</strong>
+    </div>
+    <div class="profile-stat">
+        <span>Company level</span>
+        <strong id="profileLevel">1</strong>
+    </div>
+</div>
 
     <span class="online-badge">● Online</span>
     <button class="btn btn-sm btn-danger" id="authLogoutBtn">Logout</button>
