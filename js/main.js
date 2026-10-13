@@ -11,11 +11,13 @@ import { AudioSystem } from './audio.js';
 import { openBuyMenu } from './airlines.js';
 import { renderRoutes } from './routes.js';
 import { startFlightTimer } from './routes.js';
-import { 
-    auth, 
+import {
+    auth,
     onAuthChange,
     loadGameFromCloud,
-    getAuthState
+    getAuthState,
+    saveToLeaderboard,
+    loadLeaderboard
 } from './firebase.js';
 import { checkBankruptcy } from './state.js';
 
@@ -53,20 +55,29 @@ function setupAuthAndGame() {
         try {
             const result = await loadGameFromCloud(user.uid);
 
-            if (result.success && result.data) {
-                // Обновяваме играта с облачния запис.
-                Object.assign(Game.state, result.data);
+            
+if (result.success && result.data) {
+    // Обновяваме играта с облачния запис.
+    Object.assign(Game.state, result.data);
 
-                if (DOM.airlineNameInput) {
-                    DOM.airlineNameInput.value =
-                        Game.state.airlineName || '';
-                }
+    if (DOM.airlineNameInput) {
+        DOM.airlineNameInput.value =
+            Game.state.airlineName || '';
+    }
 
-                refreshAll();
-                renderUI();
-                updateLoanUI();
-                updateSeasonUI();               
-            }
+    refreshAll();
+    renderUI();
+    updateLoanUI();
+    updateSeasonUI();
+}
+
+// Актуализираме класацията след проверката на облачния запис.
+await saveLeaderboardScore();
+
+if (location.hash === '#leaderboard') {
+    await renderLeaderboard();
+}
+
         } catch (error) {
             console.error('Cloud save loading failed:', error);
         }
@@ -318,6 +329,126 @@ const initialScreen = validScreens.includes(requestedScreen)
     : 'overview';
 
 switchScreen(initialScreen);
+}
+
+async function saveLeaderboardScore() {
+    
+export async function renderLeaderboard() {
+    const container = document.getElementById('leaderboardList');
+
+    if (!container) {
+        console.error('Leaderboard container not found.');
+        return;
+    }
+
+    container.textContent = 'Loading leaderboard...';
+
+    try {
+        // Записваме актуалния резултат на влезлия играч.
+        await saveLeaderboardScore();
+
+        // Зареждаме общата класация.
+        const result = await loadLeaderboard();
+
+        if (!result.success) {
+            container.textContent = 'Unable to load leaderboard.';
+            return;
+        }
+
+        const entries = result.data || [];
+
+        container.replaceChildren();
+
+        if (entries.length === 0) {
+            container.textContent =
+                auth.currentUser
+                    ? 'No leaderboard entries yet.'
+                    : 'Log in to submit your score to the leaderboard.';
+            return;
+        }
+
+        const table = document.createElement('table');
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+
+        const headers = [
+            'Rank',
+            'Player',
+            'Revenue',
+            'Flights',
+            'Aircraft',
+            'Level'
+        ];
+
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+
+        headers.forEach((label) => {
+            const th = document.createElement('th');
+            th.textContent = label;
+            th.style.padding = '10px 6px';
+            th.style.textAlign = 'left';
+            th.style.borderBottom = '1px solid var(--border-color, #444)';
+            headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+
+        entries
+            .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+            .forEach((entry, index) => {
+                const row = document.createElement('tr');
+
+                const values = [
+                    String(index + 1),
+                    entry.displayName || 'Anonymous',
+                    '€' + (Number(entry.revenue) || 0).toLocaleString(),
+                    String(entry.flights || 0),
+                    String(entry.aircrafts || 0),
+                    String(entry.level || 1)
+                ];
+
+                values.forEach((value) => {
+                    const cell = document.createElement('td');
+                    cell.textContent = value;
+                    cell.style.padding = '10px 6px';
+                    cell.style.borderBottom =
+                        '1px solid var(--border-color, #444)';
+                    row.appendChild(cell);
+                });
+
+                tbody.appendChild(row);
+            });
+
+        table.appendChild(tbody);
+        container.appendChild(table);
+    } catch (error) {
+        console.error('Leaderboard rendering failed:', error);
+        container.textContent = 'An error occurred while loading the leaderboard.';
+    }
+}
+    const user = auth.currentUser;
+
+    if (!user || !Game.state) return;
+
+    const displayName =
+        user.displayName ||
+        user.email?.split('@')[0] ||
+        Game.state.airlineName ||
+        'Anonymous';
+
+    const result = await saveToLeaderboard(
+        user.uid,
+        displayName,
+        Game.state
+    );
+
+    if (!result.success) {
+        console.error('Leaderboard save failed:', result.error);
+    }
 }
 
 // ==================== RENDER UI ====================
