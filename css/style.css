@@ -991,9 +991,16 @@ body.dark-mode .upgrade-panel {
         margin-top: 10px;
     }
 
+    @media (min-width: 901px) {
+    .app {
+        min-height: calc(100vh - 16px);
+        align-items: stretch;
+    }
+
     .sidebar {
-        max-height: calc(100vh - 180px);
-        overflow-y: auto;
+        max-height: none;
+        overflow: visible;
+        align-self: stretch;
     }
 }
 
