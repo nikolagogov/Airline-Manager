@@ -496,13 +496,17 @@ function setupAuthUI() {
 const profileToggle = document.getElementById('profileToggle');
 const profileMenu = document.getElementById('profileMenu');
 
-profileToggle?.addEventListener('click', () => {
+profileToggle?.addEventListener('click', (event) => {
+    event.stopPropagation();
+
     if (!profileMenu) return;
 
-    profileMenu.hidden = !profileMenu.hidden;
+    const isOpening = profileMenu.hidden;
+    profileMenu.hidden = !isOpening;
+
     profileToggle.setAttribute(
         'aria-expanded',
-        String(!profileMenu.hidden)
+        String(isOpening)
     );
 });
 
