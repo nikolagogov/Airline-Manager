@@ -380,9 +380,10 @@ export function refreshStats() {
     updateText('ovRevenue', `€${Math.floor(state.totalRevenue).toLocaleString()}`);
 }
 
-export function refreshFleet() {
+
+export function refreshFleet(updatePreview = true) {
     renderAircrafts();
-    updateAircraftSelect();
+    updateAircraftSelect(updatePreview);
 }
 
 export function refreshRoutes() {
@@ -429,11 +430,10 @@ export function refreshUI() {
 
 export function refreshAll() {
     refreshStats();
-    refreshFleet();
+    refreshFleet(false);
     refreshRoutes();
     refreshMap();
     refreshUI();
-    updateProfitPreview();
     updateSliderInfo();
 }
 
