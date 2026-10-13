@@ -57,6 +57,17 @@ function setupAuthAndGame() {
         try {
             const result = await loadGameFromCloud(user.uid);
 
+        const cloudStatusEl = document.getElementById('profileCloudStatus');
+
+if (cloudStatusEl) {
+    if (result.success && result.data) {
+        cloudStatusEl.textContent = '✓ Cloud save loaded';
+    } else if (result.success) {
+        cloudStatusEl.textContent = 'No cloud save found';
+    } else {
+        cloudStatusEl.textContent = '⚠ Cloud save unavailable';
+    }
+}
             
 if (result.success && result.data) {
     // Обновяваме играта с облачния запис.
@@ -505,6 +516,10 @@ profileToggle?.addEventListener('click', (event) => {
     const isOpening = profileMenu.hidden;
     profileMenu.hidden = !isOpening;
 
+    if (!profileMenu.hidden) {
+    updateProfileStats();
+}
+
     profileToggle.setAttribute(
         'aria-expanded',
         String(isOpening)
@@ -607,6 +622,10 @@ if (password.length < 6) {
             showToast('Enter a name up to 30 characters.', true);
             return;
         }
+
+        if (profileMenuName) {
+            profileMenuName.textContent = displayName;
+        }
     
         const result = await savePublicProfile(user.uid, displayName);
     
@@ -650,6 +669,11 @@ profileToggle?.setAttribute('aria-expanded', 'false');
             authForms.style.display = 'flex';
             authUserInfo.style.display = 'none';
             if (onlineBadge) onlineBadge.textContent = '● Offline';
+        }
+
+        if (profileMenuName) {
+            profileMenuName.textContent =
+            publicName || user.displayName || 'Player';
         }
     });
     
