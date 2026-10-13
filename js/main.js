@@ -644,38 +644,47 @@ profileToggle?.setAttribute('aria-expanded', 'false');
         }
     });
     
-    onAuthChange(async (user) => {
-        const state = getAuthState(user);
-        if (state.isLoggedIn) {
-            authForms.style.display = 'none';
-            authUserInfo.style.display = 'flex';
-            const profile = await loadPublicProfile(user.uid);
+    
+onAuthChange(async (user) => {
+    const state = getAuthState(user);
 
-            const publicName = profile.success
-                ? profile.data?.displayName
-                : null;
-            
-            if (userEmailEl) {
-                userEmailEl.textContent =
-                    publicName || user.displayName || 'Player';
-            }
-            
-            if (publicDisplayNameInput) {
-                publicDisplayNameInput.value =
-                    publicName || user.displayName || '';
-            }
-            if (onlineBadge) onlineBadge.textContent = '● Online';
-        } else {
-            authForms.style.display = 'flex';
-            authUserInfo.style.display = 'none';
-            if (onlineBadge) onlineBadge.textContent = '● Offline';
+    if (state.isLoggedIn) {
+        authForms.style.display = 'none';
+        authUserInfo.style.display = 'flex';
+
+        const profile = await loadPublicProfile(user.uid);
+        const publicName = profile.success
+            ? profile.data?.displayName
+            : null;
+
+        const displayName = publicName || user.displayName || 'Player';
+
+        if (userEmailEl) {
+            userEmailEl.textContent = displayName;
         }
 
         if (profileMenuName) {
-            profileMenuName.textContent =
-            publicName || user.displayName || 'Player';
+            profileMenuName.textContent = displayName;
         }
-    });
+
+        if (publicDisplayNameInput) {
+            publicDisplayNameInput.value = displayName === 'Player'
+                ? ''
+                : displayName;
+        }
+
+        if (onlineBadge) {
+            onlineBadge.textContent = '● Online';
+        }
+    } else {
+        authForms.style.display = 'flex';
+        authUserInfo.style.display = 'none';
+
+        if (onlineBadge) {
+            onlineBadge.textContent = '● Offline';
+        }
+    }
+});
     
     emailInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn?.click(); });
     passwordInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn?.click(); });
