@@ -1,3 +1,4 @@
+
 import { Game, saveGame } from './game.js';
 import { DOM, updateText, updateHTML, showElement, hideElement } from './cache.js';
 import { aircraftDB, aircraftUpgrades, achievementsDB } from './data.js';
@@ -11,32 +12,33 @@ import { renderRouteAnalytics } from './routes.js';
 export function showToast(msg, err = false) {
     const existing = document.querySelectorAll('.toast');
     if (existing.length >= 3) existing[0].remove();
-    
+
     const t = document.createElement('div');
     t.className = `toast ${err ? 'error' : ''}`;
     t.innerHTML = err ? `⚠️ ${msg}` : `✈️ ${msg}`;
     document.body.appendChild(t);
-    
+
     if (!err) {
         t.style.animation = 'slideRight 0.4s, fadeOut 3.8s 2.4s forwards';
-        
-        if (msg.includes('Prestige') || msg.includes('Achievement') || 
-            msg.includes('Purchased') || msg.includes('Level') || 
+
+        if (msg.includes('Prestige') || msg.includes('Achievement') ||
+            msg.includes('Purchased') || msg.includes('Level') ||
             msg.includes('upgraded')) {
             celebrate(1.6);
         } else if (msg.includes('Completed') || msg.includes('Route')) {
             celebrate(0.7);
         }
     }
-    
+
     setTimeout(() => t.remove(), 4200);
 }
 
 // ==================== CELEBRATE ====================
 export function celebrate(intensity = 1) {
     const count = 60 * intensity;
-    const emojis = ['✈️','💰','🏆','🌟','🔥','🛫','🛬'];
-    for(let i = 0; i < count; i++) {
+    const emojis = ['✈️', '💰', '🏆', '🌟', '🔥', '🛫', '🛬'];
+
+    for (let i = 0; i < count; i++) {
         setTimeout(() => {
             const c = document.createElement('div');
             c.style.position = 'fixed';
@@ -50,10 +52,10 @@ export function celebrate(intensity = 1) {
             document.body.appendChild(c);
 
             setTimeout(() => {
-                c.style.transform = `translateY(${window.innerHeight + 150}px) rotate(${Math.random()*600 - 300}deg)`;
+                c.style.transform = `translateY(${window.innerHeight + 150}px) rotate(${Math.random() * 600 - 300}deg)`;
                 c.style.opacity = '0';
             }, 80);
-            
+
             setTimeout(() => c.remove(), 5000);
         }, i * 6);
     }
@@ -71,6 +73,7 @@ export function showConfirm(msg) {
 // ==================== GOLD FLASH ====================
 export function goldFlash(id) {
     const el = document.getElementById(id);
+
     if (el) {
         el.classList.add('gold-flash');
         setTimeout(() => el.classList.remove('gold-flash'), 400);
@@ -78,7 +81,6 @@ export function goldFlash(id) {
 }
 
 // ==================== SCREEN SWITCH ====================
-
 export function switchScreen(id) {
     const target = document.getElementById(`screen-${id}`);
     if (!target) return;
@@ -86,6 +88,7 @@ export function switchScreen(id) {
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
+
     target.classList.add('active');
 
     document.querySelectorAll('.nav-btn').forEach(button => {
@@ -95,6 +98,7 @@ export function switchScreen(id) {
     const activeBtn = document.querySelector(
         `.nav-btn[data-screen="${id}"]`
     );
+
     if (activeBtn) activeBtn.classList.add('active');
 
     // Remember the selected screen in the URL.
@@ -119,13 +123,16 @@ export function switchScreen(id) {
 export function updateLoanUI() {
     const state = Game.state;
     const ind = document.getElementById('loanIndicator');
+
     if (state.loanActive && state.loanRemaining > 0) {
         if (ind) ind.style.display = 'block';
         updateText('loanRemaining', Math.floor(state.loanRemaining).toLocaleString());
     } else {
         if (ind) ind.style.display = 'none';
     }
+
     const ad = document.getElementById('activeLoanDisplay');
+
     if (ad) {
         if (state.loanActive && state.loanRemaining > 0) {
             ad.style.display = 'block';
@@ -143,55 +150,79 @@ export function updateSeasonUI() {
 // ==================== STATISTICS ====================
 export function renderStatistics() {
     const state = Game.state;
+
     updateText('statTotalFlights', state.totalFlights || 0);
     updateText('statTotalDistance', `${(state.totalDistance || 0).toLocaleString()} km`);
-    
-    let total = 0, bestProfit = 0, bestKey = null, arr = [];
-    for (let k in state.routeStats) {
+
+    let total = 0;
+    let bestProfit = 0;
+    let bestKey = null;
+    const arr = [];
+
+    for (const k in state.routeStats) {
         const rs = state.routeStats[k];
         const avg = rs.totalProfit / rs.flights;
+
         total += rs.totalProfit;
         arr.push({ ...rs, avgProfit: avg, key: k });
+
         if (avg > bestProfit) {
             bestProfit = avg;
             bestKey = k;
         }
     }
-    
-    const avgProfit = state.totalFlights > 0 ? Math.floor(total / state.totalFlights) : 0;
+
+    const avgProfit = state.totalFlights > 0
+        ? Math.floor(total / state.totalFlights)
+        : 0;
+
     updateText('statAvgProfit', `€${avgProfit.toLocaleString()}`);
-    
+
     if (bestKey && state.routeStats[bestKey]) {
-        updateText('statBestRoute', state.routeStats[bestKey].fromName + " → " + state.routeStats[bestKey].toName);
+        updateText(
+            'statBestRoute',
+            state.routeStats[bestKey].fromName + ' → ' + state.routeStats[bestKey].toName
+        );
         updateText('statBestProfit', `€${Math.floor(bestProfit).toLocaleString()}`);
     }
-    
-    const efficiency = state.aircrafts.length > 0 ? Math.floor((state.aircrafts.filter(a => a.busy).length / state.aircrafts.length) * 100) : 0;
+
+    const efficiency = state.aircrafts.length > 0
+        ? Math.floor(
+            (state.aircrafts.filter(a => a.busy).length / state.aircrafts.length) * 100
+        )
+        : 0;
+
     updateText('statFleetEfficiency', `${efficiency}%`);
-    
+
     arr.sort((a, b) => b.avgProfit - a.avgProfit);
+
     const top5 = arr.slice(0, 5);
     const topDiv = DOM.topRoutesList;
+
     if (topDiv) {
         if (top5.length === 0) {
-            topDiv.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">No completed flights.</div>';
+            topDiv.innerHTML =
+                '<div style="text-align:center; color:var(--text-muted); padding:20px;">No completed flights.</div>';
         } else {
             topDiv.innerHTML = top5.map((r, i) =>
                 `<div class="route-rank">
-                    <span>${i+1}. ${r.fromName} → ${r.toName}</span>
+                    <span>${i + 1}. ${r.fromName} → ${r.toName}</span>
                     <span class="rank-profit">💰 €${Math.floor(r.avgProfit).toLocaleString()}</span>
                     <span style="font-size:11px; color:var(--text-light);">${r.flights} flights</span>
                 </div>`
             ).join('');
         }
     }
-    
+
     const chartDiv = DOM.profitChart;
+
     if (chartDiv) {
         if (arr.length === 0) {
-            chartDiv.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">No data.</div>';
+            chartDiv.innerHTML =
+                '<div style="text-align:center; color:var(--text-muted); padding:20px;">No data.</div>';
         } else {
             const max = Math.max(...arr.map(r => r.avgProfit), 1);
+
             chartDiv.innerHTML = arr.slice(0, 8).map(r =>
                 `<div>
                     <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
@@ -211,9 +242,12 @@ export function renderStatistics() {
 export function renderAchievements() {
     const c = DOM.achievementsList;
     if (!c) return;
+
     const state = Game.state;
+
     c.innerHTML = achievementsDB.map(ach => {
         const unlocked = state.achievements.includes(ach.id);
+
         return `<div class="achievement-card ${!unlocked ? 'achievement-locked' : ''}">
             <div>
                 <strong>${unlocked ? '🏆' : '🔒'} ${ach.name}</strong>
@@ -229,31 +263,40 @@ export function renderAchievements() {
 export function renderAircrafts() {
     const cont = DOM.aircraftListScreen;
     if (!cont) return;
+
     const state = Game.state;
-    
+
     if (!state.aircrafts.length) {
-        cont.innerHTML = '<div style="padding:16px; text-align:center; color:var(--text-muted);">✈️ No aircraft. Buy first!</div>';
+        cont.innerHTML =
+            '<div style="padding:16px; text-align:center; color:var(--text-muted);">✈️ No aircraft. Buy first!</div>';
         return;
     }
-    
+
     let sorted = [...state.aircrafts];
+
     const sortBy = document.getElementById('fleetSort')?.value || 'name';
     const filterBy = document.getElementById('fleetFilter')?.value || 'all';
-    
-    if (filterBy !== 'all') sorted = sorted.filter(ac => ac.weightClass === filterBy);
+
+    if (filterBy !== 'all') {
+        sorted = sorted.filter(ac => ac.weightClass === filterBy);
+    }
+
     if (sortBy === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name));
     if (sortBy === 'price') sorted.sort((a, b) => a.price - b.price);
     if (sortBy === 'priceDesc') sorted.sort((a, b) => b.price - a.price);
     if (sortBy === 'capacity') sorted.sort((a, b) => b.capacity - a.capacity);
-    
+
     cont.innerHTML = sorted.map(ac => {
         const isSelected = state.selectedAircraftUniqueId === ac.uniqueId;
+
         let status = ac.busy ? 'BUSY' : 'IDLE';
         let statusClass = ac.busy ? 'status-busy' : 'status-idle';
+
         if (ac.maintenance) {
             status = 'MAINTENANCE';
             statusClass = 'status-maintenance';
         }
+
         return `<div class="aircraft-card ${isSelected ? 'selected' : ''}" data-id="${ac.uniqueId}">
             <div>
                 <strong>${ac.image} ${ac.name}</strong>
@@ -270,13 +313,15 @@ export function renderAircrafts() {
 
 export function selectAircraft(uid) {
     const state = Game.state;
+
     state.selectedAircraftUniqueId = uid;
     renderAircrafts();
+
     const ac = state.aircrafts.find(a => a.uniqueId === uid);
     showToast(`Selected ${ac?.name}`);
 }
 
-
+// ==================== AIRCRAFT SELECT ====================
 export function updateAircraftSelect(updatePreview = true) {
     const sel = DOM.aircraftSelect;
 
@@ -294,41 +339,39 @@ export function updateAircraftSelect(updatePreview = true) {
         updateProfitPreview();
     }
 }
-    const sel = DOM.aircraftSelect;
-    if (sel) {
-        const state = Game.state;
-        sel.innerHTML = '<option value="">-- Select IDLE Aircraft --</option>' +
-            state.aircrafts.filter(ac => !ac.busy && !ac.maintenance)
-                .map(ac => `<option value="${ac.uniqueId}">${ac.image} ${ac.name} (Cap:${ac.capacity} | Range:${ac.range}km)</option>`)
-                .join('');
-    }
-    updateProfitPreview();
-}
 
 // ==================== PROFIT PREVIEW ====================
 export async function updateProfitPreview() {
     const pre = DOM.profitPreview;
     if (!pre) return;
+
     const state = Game.state;
-    
+
     if (!Game.selectedStart || !Game.selectedEnd) {
         pre.innerText = '💶 Select start and destination first';
         return;
     }
+
     const aid = DOM.aircraftSelect?.value;
+
     if (!aid) {
         pre.innerText = '💶 Select an aircraft';
         return;
     }
+
     const ac = state.aircrafts.find(a => a.uniqueId === aid);
     if (!ac) return;
+
     const dist = getDistance(Game.selectedStart, Game.selectedEnd);
+
     if (dist > ac.range) {
         pre.innerText = '❌ Range too short';
         return;
     }
+
     const dKey = getDemandKey(Game.selectedStart.id, Game.selectedEnd.id);
     const demand = state.routeDemand[dKey]?.demand || 1.0;
+
     const temp = {
         distance: dist,
         priceMultiplier: Game.routePriceMultiplier,
@@ -338,14 +381,24 @@ export async function updateProfitPreview() {
         airportFee: ac.airportFee,
         from: Game.selectedStart.id
     };
+
     let profit = computeFlightProfit(temp, demand, state.fuelPrice);
-    if (state.loanActive && profit > 0) profit = Math.floor(profit * 0.5);
-    pre.innerHTML = `💶 Expected: <strong style="color:var(--primary);">€${profit.toLocaleString()}</strong> (demand: ${(demand*100).toFixed(0)}%, season: ${(getSeasonBonus(Game.selectedStart.id)*100).toFixed(0)}%)`;
+
+    if (state.loanActive && profit > 0) {
+        profit = Math.floor(profit * 0.5);
+    }
+
+    pre.innerHTML =
+        `💶 Expected: <strong style="color:var(--primary);">€${profit.toLocaleString()}</strong> (demand: ${(demand * 100).toFixed(0)}%, season: ${(getSeasonBonus(Game.selectedStart.id) * 100).toFixed(0)}%)`;
 }
 
 export function updateSliderInfo() {
     const lbl = DOM.priceMultLabel;
-    if (lbl) lbl.innerHTML = Game.routePriceMultiplier.toFixed(2) + 'x';
+
+    if (lbl) {
+        lbl.innerHTML = Game.routePriceMultiplier.toFixed(2) + 'x';
+    }
+
     updateProfitPreview();
 }
 
@@ -354,32 +407,37 @@ export function renderOverview() {
     const state = Game.state;
     const recent = state.routes.slice(-3).reverse();
     const c = DOM.recentRoutesList;
+
     if (c) {
-        c.innerHTML = recent.length ?
-            recent.map(r =>
+        c.innerHTML = recent.length
+            ? recent.map(r =>
                 `<div style="background:var(--bg-secondary); border-radius:12px; padding:8px; transition:background 0.3s;">
                     <strong style="color:var(--text-primary);">${r.fromName} → ${r.toName}</strong>
                     <br><span style="color:var(--text-muted); font-size:12px;">${r.aircraftName}</span>
                 </div>`
-            ).join('') :
-            '<div style="color:var(--text-muted); padding:8px;">No routes yet.</div>';
+            ).join('')
+            : '<div style="color:var(--text-muted); padding:8px;">No routes yet.</div>';
     }
 }
 
 // ==================== REFRESH ====================
 export function refreshStats() {
     const state = Game.state;
-    const active = state.routes.filter(r => r.active && r.endTime > Date.now()).length;
+
+    const active = state.routes.filter(
+        r => r.active && r.endTime > Date.now()
+    ).length;
+
     updateText('miniMoney', `€${Math.floor(state.money).toLocaleString()}`);
     updateText('miniPlanes', state.aircrafts.length);
     updateText('miniRoutes', active);
     updateText('miniFuel', `€${state.fuelPrice.toFixed(2)}`);
+
     updateText('ovMoney', `€${Math.floor(state.money).toLocaleString()}`);
     updateText('ovPlanes', state.aircrafts.length);
     updateText('ovRoutes', state.routes.length);
     updateText('ovRevenue', `€${Math.floor(state.totalRevenue).toLocaleString()}`);
 }
-
 
 export function refreshFleet(updatePreview = true) {
     renderAircrafts();
@@ -395,20 +453,24 @@ let lastMapHash = '';
 
 export function refreshMap() {
     if (!Game.mapNeedsUpdate) return;
+
     const state = Game.state;
-    
-    const routeHash = state.routes.map(r => `${r.from}-${r.to}-${r.active}`).join('|');
+
+    const routeHash = state.routes
+        .map(r => `${r.from}-${r.to}-${r.active}`)
+        .join('|');
+
     const hubHash = state.hubCity || 'none';
     const citiesHash = Game.cities.map(c => c.id).join(',');
     const currentHash = `${routeHash}|${hubHash}|${citiesHash}`;
-    
+
     if (currentHash === lastMapHash) {
         Game.mapNeedsUpdate = false;
         return;
     }
-    
+
     lastMapHash = currentHash;
-    
+
     import('./map.js').then(module => {
         module.updateMapMarkers();
         Game.mapNeedsUpdate = false;
