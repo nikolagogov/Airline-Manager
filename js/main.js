@@ -493,21 +493,42 @@ function setupAuthUI() {
     const publicDisplayNameInput = document.getElementById('publicDisplayName');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     
+const profileToggle = document.getElementById('profileToggle');
+const profileMenu = document.getElementById('profileMenu');
+
+profileToggle?.addEventListener('click', () => {
+    if (!profileMenu) return;
+
+    profileMenu.hidden = !profileMenu.hidden;
+    profileToggle.setAttribute(
+        'aria-expanded',
+        String(!profileMenu.hidden)
+    );
+});
+
+document.addEventListener('click', (event) => {
+    if (!profileMenu || !profileToggle) return;
+
+    if (
+        !profileMenu.contains(event.target) &&
+        !profileToggle.contains(event.target)
+    ) {
+        profileMenu.hidden = true;
+        profileToggle.setAttribute('aria-expanded', 'false');
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && profileMenu && profileToggle) {
+        profileMenu.hidden = true;
+        profileToggle.setAttribute('aria-expanded', 'false');
+    }
+});
+    
     loginBtn?.addEventListener('click', async () => {
         const email = emailInput?.value?.trim();
         const password = passwordInput?.value?.trim();
-        const displayName = displayNameInput?.value?.trim();
-        
-        if (!displayName) {
-            showToast('Please enter a public name', true);
-            return;
-        }
-        
-        if (displayName.length > 30) {
-            showToast('Name must be 30 characters or less', true);
-            return;
-        }
-        
+                
         if (!email || !password) {
             showToast('Please enter email and password', true);
             return;
@@ -524,10 +545,26 @@ function setupAuthUI() {
     });
     
     registerBtn?.addEventListener('click', async () => {
-        const email = emailInput?.value?.trim();
-        const password = passwordInput?.value?.trim();
-        if (!email || !password) { showToast('Please enter email and password', true); return; }
-        if (password.length < 6) { showToast('Password must be at least 6 characters', true); return; }
+        
+const email = emailInput?.value?.trim();
+const password = passwordInput?.value?.trim();
+const displayName = displayNameInput?.value?.trim();
+
+if (!displayName || displayName.length > 30) {
+    showToast('Enter a public name (up to 30 characters).', true);
+    return;
+}
+
+if (!email || !password) {
+    showToast('Please enter email and password', true);
+    return;
+}
+
+if (password.length < 6) {
+    showToast('Password must be at least 6 characters', true);
+    return;
+}
+
         const { registerUser } = await import('./firebase.js');
         const result = await registerUser(email, password, displayName);
         if (result.success) {
@@ -570,6 +607,10 @@ function setupAuthUI() {
     
         if (result.success) {
             showToast('Public name updated!');
+            if (profileMenu) {
+    profileMenu.hidden = true;
+}
+profileToggle?.setAttribute('aria-expanded', 'false');
             if (userEmailEl) {
                 userEmailEl.textContent = displayName;
             }
