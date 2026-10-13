@@ -22,6 +22,7 @@ import { checkBankruptcy } from './state.js';
 // ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
     cacheElements();
+    setupAuthUI();
     setupAuthAndGame();
 });
 
