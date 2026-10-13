@@ -1,5 +1,5 @@
 // ==================== SERVICE WORKER ====================
-const CACHE_NAME = 'airline-manager-v3';
+const CACHE_NAME = 'airline-manager-v4';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -54,63 +54,76 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ==================== FETCH ====================
+
+/* ==================== FETCH ==================== */
 self.addEventListener('fetch', event => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
-    return event.respondWith(fetch(event.request));
+  const request = event.request;
+
+  // Only handle GET requests.
+  if (request.method !== 'GET') {
+    return;
   }
 
-  // Skip external resources (CDN)
-  const url = new URL(event.request.url);
+  const url = new URL(request.url);
+
+  // Leave external resources to the browser.
   if (url.origin !== self.location.origin) {
-    return event.respondWith(fetch(event.request));
+    return;
   }
 
-  // Skip if request is for analytics or non-critical
-  if (url.pathname.includes('analytics') || url.pathname.includes('telemetry')) {
-    return event.respondWith(fetch(event.request));
+  // Do not cache analytics or telemetry.
+  if (
+    url.pathname.includes('analytics') ||
+    url.pathname.includes('telemetry')
+  ) {
+    return;
   }
 
+  // Network first: prefer the newest available version.
   event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        // Return cached response if available
+    fetch(request)
+      .then(response => {
+        if (response && response.ok) {
+          const responseToCache = response.clone();
+
+          event.waitUntil(
+            caches.open(CACHE_NAME)
+              .then(cache => cache.put(request, responseToCache))
+              .catch(error => {
+                console.warn('Cache update failed:', error);
+              })
+          );
+        }
+
+        return response;
+      })
+      .catch(async () => {
+        // If offline, use the cached response.
+        const cachedResponse = await caches.match(request);
+
         if (cachedResponse) {
-          // Update cache in background for fresh content
-          fetch(event.request)
-            .then(networkResponse => {
-              if (networkResponse && networkResponse.ok) {
-                caches.open(CACHE_NAME)
-                  .then(cache => cache.put(event.request, networkResponse));
-              }
-            })
-            .catch(() => { /* Network error, ignore */ });
           return cachedResponse;
         }
 
-        // If not in cache, fetch from network
-        return fetch(event.request)
-          .then(networkResponse => {
-            // Cache the response for future
-            if (networkResponse && networkResponse.ok) {
-              const responseClone = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => cache.put(event.request, responseClone))
-                .catch(() => { /* Cache error, ignore */ });
+        // Fallback for offline page navigation.
+        if (request.mode === 'navigate') {
+          const offlinePage = await caches.match('./index.html');
+
+          if (offlinePage) {
+            return offlinePage;
+          }
+        }
+
+        return new Response(
+          'Offline - this resource is not available.',
+          {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: {
+              'Content-Type': 'text/plain; charset=utf-8'
             }
-            return networkResponse;
-          })
-          .catch(() => {
-            // Offline fallback for HTML pages
-            if (event.request.headers.get('accept').includes('text/html')) {
-              return caches.match('./index.html');
-            }
-            return new Response('Offline - content not available', {
-              status: 503,
-              statusText: 'Service Unavailable'
-            });
-          });
+          }
+        );
       })
   );
 });
