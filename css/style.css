@@ -904,3 +904,55 @@ body.dark-mode .upgrade-panel {
         width: min(240px, calc(100vw - 40px));
     }
 }
+
+.profile-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color, #dbe3ed);
+}
+
+.profile-summary-avatar {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #eee8ff;
+    font-size: 22px;
+}
+
+.profile-subtitle {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-muted, #64748b);
+}
+
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color, #dbe3ed);
+}
+
+.profile-section:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.profile-stat {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 13px;
+}
+
+.profile-stat span {
+    color: var(--text-muted, #64748b);
+}
+
+#profileCloudStatus {
+    font-size: 13px;
+}
