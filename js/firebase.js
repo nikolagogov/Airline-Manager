@@ -7,7 +7,8 @@ import {
     onAuthStateChanged,
     signOut,
     GoogleAuthProvider,
-    signInWithPopup
+    signInWithPopup,
+    updateProfile
 } from 'firebase/auth';
 import { 
     getDatabase, 
@@ -50,16 +51,84 @@ export async function loginUser(email, password) {
     }
 }
 
-export async function registerUser(email, password) {
+export async function registerUser(email, password, displayName) {
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        const name = displayName.trim();
+
+        if (name) {
+            await updateProfile(userCredential.user, {
+                displayName: name
+            });
+
+            await set(
+                ref(database, `users/${userCredential.user.uid}/profile`),
+                { displayName: name }
+            );
+        }
+
         return { success: true, user: userCredential.user };
     } catch (error) {
         let message = error.message;
+
         if (error.code === 'auth/email-already-in-use') message = 'Email already in use!';
         if (error.code === 'auth/weak-password') message = 'Password must be at least 6 characters!';
         if (error.code === 'auth/invalid-email') message = 'Invalid email!';
+
         return { success: false, error: message };
+    }
+}
+
+export async function savePublicProfile(userId, displayName) {
+    try {
+        const name = displayName.trim();
+
+        if (!name || name.length > 30) {
+            return {
+                success: false,
+                error: 'Name must be between 1 and 30 characters.'
+            };
+        }
+
+        await set(ref(database, `users/${userId}/profile`), {
+            displayName: name
+        });
+
+        if (auth.currentUser?.uid === userId) {
+            await updateProfile(auth.currentUser, {
+                displayName: name
+            });
+        }
+
+        return { success: true, displayName: name };
+    } catch (error) {
+        console.error('Profile save failed:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function loadPublicProfile(userId) {
+    try {
+        const snapshot = await get(
+            child(ref(database), `users/${userId}/profile`)
+        );
+
+        if (snapshot.exists()) {
+            return {
+                success: true,
+                data: snapshot.val()
+            };
+        }
+
+        return { success: true, data: null };
+    } catch (error) {
+        console.error('Profile load failed:', error);
+        return { success: false, error: error.message };
     }
 }
 
