@@ -276,7 +276,24 @@ export function selectAircraft(uid) {
     showToast(`Selected ${ac?.name}`);
 }
 
-export function updateAircraftSelect() {
+
+export function updateAircraftSelect(updatePreview = true) {
+    const sel = DOM.aircraftSelect;
+
+    if (sel) {
+        const state = Game.state;
+
+        sel.innerHTML = '<option value="">-- Select IDLE Aircraft --</option>' +
+            state.aircrafts
+                .filter(ac => !ac.busy && !ac.maintenance)
+                .map(ac => `<option value="${ac.uniqueId}">${ac.image} ${ac.name} (Cap:${ac.capacity} | Range:${ac.range}km)</option>`)
+                .join('');
+    }
+
+    if (updatePreview) {
+        updateProfitPreview();
+    }
+}
     const sel = DOM.aircraftSelect;
     if (sel) {
         const state = Game.state;
