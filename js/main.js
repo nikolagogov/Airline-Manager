@@ -62,10 +62,7 @@ function setupAuthAndGame() {
                         Game.state.airlineName || '';
                 }
 
-                refreshAll();
-                renderUI();
-                updateLoanUI();
-                updateSeasonUI();               
+                refreshAll();               
             }
         } catch (error) {
             console.error('Cloud save loading failed:', error);
