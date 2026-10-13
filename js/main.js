@@ -268,10 +268,7 @@ function loadGame() {
             `;
         }
     }
-    
-    // Auth UI
-    setupAuthUI();
-    
+  
     // Start game
     import('./state.js').then(m => {
         m.updateCompanyLevel();
