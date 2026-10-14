@@ -19,39 +19,57 @@ import { AudioSystem } from './audio.js';
 const L = window.L;
 
 // ==================== MAP ====================
+
 export function initMap() {
-    if (!L) {
-        console.error('Leaflet (L) не е намерен!');
+    const mapContainer = document.getElementById('map');
+
+    if (!mapContainer) {
+        console.error('[Map] Missing #map container');
         return;
     }
 
-    const mapContainer = document.getElementById('map');
-    if (!mapContainer) {
-        console.error('Map container #map not found!');
+    if (!window.L) {
+        console.error('[Map] Leaflet is not loaded');
         return;
     }
 
     if (Game.map) {
-        setTimeout(() => Game.map.invalidateSize(), 150);
+        setTimeout(() => Game.map?.invalidateSize(true), 200);
         return;
     }
 
-    Game.map = L.map(mapContainer).setView([50, 10], 4);
+    try {
+        Game.map = window.L.map(mapContainer).setView([50, 10], 4);
 
-    L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        {
-            attribution: '&copy; OpenStreetMap contributors'
+        window.L.tileLayer(
+            'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+            {
+                attribution: '&copy; OpenStreetMap contributors'
+            }
+        ).addTo(Game.map);
+
+        Game.map.on('load', () => {
+            console.info('[Map] Leaflet map loaded');
+        });
+
+        Game.map.on('tileerror', (event) => {
+            console.error('[Map] Tile failed to load', event);
+        });
+
+        setTimeout(() => Game.map?.invalidateSize(true), 200);
+
+        try {
+            updateMapMarkers();
+        } catch (error) {
+            console.error('[Map] Marker rendering failed:', error);
         }
-    ).addTo(Game.map);
 
-    updateMapMarkers();
-
-    requestAnimationFrame(() => {
-        Game.map?.invalidateSize();
-    });
+        console.info('[Map] Initialization completed');
+    } catch (error) {
+        console.error('[Map] Initialization failed:', error);
+        Game.map = null;
+    }
 }
-
     
     // 2. Предотвратяване на двойна инициализация
     if (Game.map) {
