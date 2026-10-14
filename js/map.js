@@ -71,52 +71,6 @@ export function initMap() {
     }
 }
     
-    // 2. Предотвратяване на двойна инициализация
-    if (Game.map) {
-        // Ако вече съществува, просто я преоразмери
-        setTimeout(() => Game.map.invalidateSize(), 100);
-        return;
-    }
-    
-    const mapContainer = document.getElementById('map');
-    if (!mapContainer) {
-        console.error("Map container #map not found!");
-        return;
-    }
-
-    // 3. Инициализация
-    Game.map = L.map('map', {
-        tap: true,
-        touchZoom: true,
-        scrollWheelZoom: true,
-        dragging: true,
-        zoomControl: true,
-        fadeAnimation: true,
-        zoomAnimation: true,
-        markerZoomAnimation: true
-    }).setView([50, 10], 4);
-    
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OSM'
-    }).addTo(Game.map);
-    
-    // 4. Подсигуряване на размера при видимост
-    const observer = new ResizeObserver(() => {
-        if (Game.map) {
-            Game.map.invalidateSize();
-        }
-    });
-    observer.observe(mapContainer);
-    
-    // 5. Първоначално обновяване
-    updateMapMarkers();
-    
-    // Една лека пауза, за да се гарантира, че контейнерът е нарисуван в DOM
-    setTimeout(() => {
-        if (Game.map) Game.map.invalidateSize();
-    }, 300);
-}
-
 export function getCityColor(type) {
     if (type === 'beach') return '#3b82f6';
     if (type === 'mountain') return '#10b981';
