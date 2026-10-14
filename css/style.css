@@ -962,24 +962,25 @@ body.dark-mode .upgrade-panel {
     font-size: 13px;
 }
 
-/* ===== AIRLINE MANAGER OPERATIONS CENTER — CLEAN RESPONSIVE LAYOUT ===== */
-html { width: 100%; min-height: 100%; }
+/* ===== AIRLINE MANAGER LAYOUT — SINGLE SOURCE OF TRUTH ===== */
+html {
+    width: 100%;
+    height: 100%;
+}
 body {
     width: 100%;
     height: 100vh;
     height: 100dvh;
     min-height: 0;
     margin: 0;
-    padding: 12px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     overflow: hidden;
-    box-sizing: border-box;
     background: #eef3f8;
 }
 body.dark-mode { background: #0b1220; }
-*, *::before, *::after { box-sizing: border-box; }
 
 .auth-bar {
     position: relative;
@@ -989,40 +990,37 @@ body.dark-mode { background: #0b1220; }
     width: 100%;
     min-width: 0;
     margin: 0;
-    padding: 10px 16px;
+    padding: 8px 14px;
     border: 1px solid var(--border-color);
     border-radius: 16px;
     background: var(--bg-primary);
     box-shadow: 0 3px 12px rgba(15,23,42,.05);
 }
 .auth-bar-content {
-    width: 100%;
-    min-width: 0;
-    min-height: 38px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-}
-.auth-logo { flex: 0 0 auto; color: var(--text-primary); }
-.auth-forms, .auth-user-info {
+    flex-wrap: wrap;
+    gap: 8px 16px;
     min-width: 0;
+}
+.auth-logo { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.auth-forms, .auth-user-info {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
     flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
 }
 .auth-user-info { margin-left: auto; }
 
 .app {
     display: flex;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    max-width: none;
     min-width: 0;
     min-height: 0;
     margin: 0;
@@ -1030,17 +1028,17 @@ body.dark-mode { background: #0b1220; }
 }
 .sidebar {
     display: grid;
-    grid-template-columns: minmax(170px, 220px) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(150px, 200px) minmax(0, 1fr) auto;
     grid-template-areas: "brand nav tools";
     align-items: center;
-    gap: 12px 16px;
+    gap: 10px 14px;
     flex: 0 0 auto;
     width: 100%;
     min-width: 0;
     min-height: 0;
     height: auto;
     margin: 0;
-    padding: 12px 14px;
+    padding: 10px 12px;
     overflow: visible;
     border: 1px solid var(--border-color);
     border-radius: 16px;
@@ -1073,15 +1071,15 @@ body.dark-mode { background: #0b1220; }
     min-width: 0;
 }
 .sidebar .nav-btn {
-    width: auto;
-    min-width: 0;
-    min-height: 36px;
-    margin: 0;
-    padding: 8px 11px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    width: auto;
+    min-width: 0;
+    min-height: 34px;
+    margin: 0;
+    padding: 7px 10px;
     border-radius: 10px;
     font-size: 12px;
     white-space: nowrap;
@@ -1118,9 +1116,9 @@ body.dark-mode { background: #0b1220; }
     width: 100%;
     min-width: 0;
     min-height: 0;
-    height: auto;
+    height: 0;
     margin: 0;
-    padding: clamp(16px, 2vw, 28px);
+    padding: clamp(14px, 1.8vw, 24px);
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1130,10 +1128,18 @@ body.dark-mode { background: #0b1220; }
     background: var(--bg-primary);
     box-shadow: 0 3px 12px rgba(15,23,42,.05);
 }
-.screen { width: 100%; max-width: 1500px; margin-inline: auto; }
+.screen {
+    display: none;
+    width: 100%;
+    max-width: 1500px;
+    min-height: 100%;
+    margin-inline: auto;
+}
+.screen.active { display: block; }
 .screen > h2 { margin-bottom: 18px; font-size: clamp(1.15rem,1.5vw,1.45rem); }
+
 .airline-name-container {
-    min-height: 60px;
+    min-height: 58px;
     margin-bottom: 14px;
     padding: 12px 16px;
     border: 1px solid var(--border-color);
@@ -1147,7 +1153,7 @@ body.dark-mode { background: #0b1220; }
 }
 .stat-card {
     min-width: 0;
-    padding: 16px 14px;
+    padding: 14px;
     border: 1px solid var(--border-color);
     border-radius: 14px;
     text-align: left;
@@ -1166,10 +1172,9 @@ body.dark-mode { background: #0b1220; }
 #map { min-height: 320px; border: 1px solid var(--border-color); border-radius: 14px; }
 .dialog { max-height: 88vh; overflow-y: auto; }
 
-/* Tablet */
 @media (max-width: 1200px) {
     .sidebar {
-        grid-template-columns: minmax(145px, 190px) minmax(0,1fr);
+        grid-template-columns: minmax(130px, 170px) minmax(0,1fr);
         grid-template-areas: "brand tools" "nav nav";
     }
     .sidebar nav { flex-wrap: wrap; }
@@ -1177,8 +1182,8 @@ body.dark-mode { background: #0b1220; }
     .overview-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
-/* Mobile: allow natural document scrolling */
 @media (max-width: 700px) {
+    html { height: auto; }
     body {
         height: auto;
         min-height: 100vh;
@@ -1190,14 +1195,15 @@ body.dark-mode { background: #0b1220; }
     .auth-bar { padding: 10px 12px; }
     .auth-bar-content { align-items: flex-start; flex-direction: column; }
     .auth-user-info { width: 100%; margin-left: 0; justify-content: flex-start; }
-    .app { flex: 0 0 auto; min-height: 0; overflow: visible; }
+    .app { flex: 0 0 auto; height: auto; min-height: 0; overflow: visible; }
     .sidebar { display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 12px; }
     .logo { width: 100%; }
     .sidebar nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; width: 100%; }
     .sidebar .nav-btn { width: 100%; min-height: 42px; padding: 9px 7px; white-space: normal; }
     .sidebar > .nav-btn, #soundToggle, #darkModeToggle,
     .sidebar > .nav-btn[data-action="openBuyMenu"] { width: 100%; margin: 0; justify-self: auto; }
-    .main-content { flex: 0 0 auto; min-height: 60vh; padding: 13px; overflow: visible; }
+    .main-content { flex: 0 0 auto; height: auto; min-height: 60vh; padding: 13px; overflow: visible; }
+    .screen { min-height: 0; }
     .overview-stats { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
     .stat-card { padding: 12px 10px; }
     .stat-card div:first-of-type { font-size: 20px; }
@@ -1211,210 +1217,5 @@ body.dark-mode { background: #0b1220; }
     body { padding: 7px; gap: 7px; }
     .sidebar { padding: 8px 10px; }
     .sidebar .nav-btn { min-height: 32px; padding-block: 6px; }
-    .main-content { padding: 14px 18px; }
-}
-
-/* ===== FIX: FILL AVAILABLE VIEWPORT HEIGHT ===== */
-html, body {
-    width: 100%;
-}
-body {
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-}
-.app {
-    flex: 1 1 0 !important;
-    height: 0;
-    min-height: 0;
-    align-items: stretch;
-}
-.main-content {
-    flex: 1 1 0 !important;
-    height: 0;
-    min-height: 0;
-    width: 100%;
-    align-self: stretch;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-.screen {
-    display: none;
-    width: 100%;
-    min-height: 100%;
-    max-width: 1500px;
-    margin-inline: auto;
-}
-.screen.active {
-    display: block;
-}
-@media (max-width: 700px) {
-    body {
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
-    }
-    .app {
-        height: auto;
-        flex: 0 0 auto !important;
-    }
-    .main-content {
-        height: auto;
-        min-height: 60vh;
-        flex: 0 0 auto !important;
-    }
-    .screen {
-        min-height: 0;
-    }
-}
-
-/* ===== FINAL STRUCTURAL OVERRIDE: NAV ABOVE FULL-HEIGHT WORKSPACE ===== */
-html, body {
-    width: 100% !important;
-}
-body {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: auto minmax(0, 1fr) !important;
-    align-content: stretch !important;
-    justify-items: stretch !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-}
-body > .auth-bar {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-}
-body > .app {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: auto minmax(0, 1fr) !important;
-    align-content: stretch !important;
-    justify-items: stretch !important;
-    gap: 12px !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    flex: none !important;
-    overflow: hidden !important;
-}
-body > .app > .sidebar {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    height: auto !important;
-    min-height: 0 !important;
-    align-self: stretch !important;
-}
-body > .app > .main-content {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    align-self: stretch !important;
-    flex: none !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-}
-body > .app > .main-content > .screen {
-    width: 100% !important;
-    max-width: 1500px !important;
-    min-height: 0 !important;
-    margin-inline: auto !important;
-}
-body > .app > .main-content > .screen.active {
-    display: block !important;
-}
-@media (max-width: 700px) {
-    body {
-        display: flex !important;
-        flex-direction: column !important;
-        height: auto !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-    }
-    body > .app {
-        display: flex !important;
-        flex: 0 0 auto !important;
-        flex-direction: column !important;
-        height: auto !important;
-        min-height: 0 !important;
-        overflow: visible !important;
-    }
-    body > .app > .main-content {
-        height: auto !important;
-        min-height: 60vh !important;
-        overflow: visible !important;
-    }
-}
-
-/* ===== VERTICAL HEIGHT FIX: APP FILLS THE REMAINING VIEWPORT ===== */
-html {
-    height: 100% !important;
-    min-height: 100% !important;
-}
-body {
-    position: relative !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-}
-body > .auth-bar {
-    flex: 0 0 auto !important;
-}
-body > .app {
-    display: flex !important;
-    flex: 1 1 auto !important;
-    flex-direction: column !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: hidden !important;
-}
-body > .app > .sidebar {
-    flex: 0 0 auto !important;
-}
-body > .app > .main-content {
-    display: block !important;
-    flex: 1 1 0% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-}
-@media (max-width: 700px) {
-    html { height: auto !important; }
-    body {
-        height: auto !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-    }
-    body > .app {
-        display: flex !important;
-        flex: 0 0 auto !important;
-        height: auto !important;
-        overflow: visible !important;
-    }
-    body > .app > .main-content {
-        flex: 0 0 auto !important;
-        height: auto !important;
-        min-height: 60vh !important;
-        overflow: visible !important;
-    }
+    .main-content { padding: 12px 16px; }
 }
