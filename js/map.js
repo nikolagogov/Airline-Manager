@@ -2,7 +2,6 @@
 const L = window.L;
 
 import { Game } from './game.js';
-import { updateMapMarkers } from './map.js';
 
 // ==================== MAP ====================
 export function initMap() {
