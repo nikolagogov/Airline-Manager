@@ -1,15 +1,57 @@
-// ВАЖНО: Leaflet се зарежда глобално в window
-const L = window.L;
 
-import { Game } from './game.js';
+import { Game, saveGame } from './game.js';
+import {
+    getCitySlotUsage,
+    getMaxSlots,
+    getSeasonBonus,
+    getDistance
+} from './utils.js';
+import {
+    showToast,
+    updateProfitPreview,
+    updateHubButton,
+    refreshAll
+} from './ui.js';
+import { DOM, showElement, hideElement } from './cache.js';
+import { checkAchievements } from './achievements.js';
+import { AudioSystem } from './audio.js';
+
+const L = window.L;
 
 // ==================== MAP ====================
 export function initMap() {
-    // 1. Проверка за Leaflet
     if (!L) {
-        console.error("Leaflet (L) не е намерен!");
+        console.error('Leaflet (L) не е намерен!');
         return;
     }
+
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer) {
+        console.error('Map container #map not found!');
+        return;
+    }
+
+    if (Game.map) {
+        setTimeout(() => Game.map.invalidateSize(), 150);
+        return;
+    }
+
+    Game.map = L.map(mapContainer).setView([50, 10], 4);
+
+    L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        {
+            attribution: '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(Game.map);
+
+    updateMapMarkers();
+
+    requestAnimationFrame(() => {
+        Game.map?.invalidateSize();
+    });
+}
+
     
     // 2. Предотвратяване на двойна инициализация
     if (Game.map) {
