@@ -99,29 +99,24 @@ const popup = `
         Level: ${c.level}<br>
         Season: ${(seasonBonus * 100).toFixed(0)}%<br>
         ${hubBonus ? `${hubBonus}<br>` : ''}
-        <hr style="margin:8px 0">
 
-        <button class="btn btn-primary"
-            onclick="window.selectMapCity('${c.id}')"
-            style="width:100%;font-size:12px;padding:6px;margin-bottom:5px">
-            ${isStart ? '✓ START' : 'Choose as START'}
-        </button>
-
-        ${isStart ? `
-            <button class="btn btn-secondary"
-                onclick="window.selectMapDestination()"
-                style="width:100%;font-size:12px;padding:6px;margin-bottom:5px">
-                Choose DESTINATION
+        <div style="display:flex; gap:6px; margin-top:10px; align-items:center">
+            <button
+                class="btn btn-primary"
+                onclick="window.selectMapCity('${c.id}')"
+                style="flex:1; font-size:12px; padding:7px 8px">
+                ${isStart ? '✓ START' : isEnd ? '✓ DESTINATION' : 'Select city'}
             </button>
-        ` : ''}
 
-        <button class="btn btn-secondary"
-            data-action="upgradeCity"
-            data-id="${c.id}"
-            ${state.money < c.upgradeCost ? 'disabled' : ''}
-            style="width:100%;font-size:11px;padding:5px">
-            Upgrade (€${c.upgradeCost.toLocaleString()})
-        </button>
+            <button
+                class="btn btn-secondary"
+                data-action="upgradeCity"
+                data-id="${c.id}"
+                ${state.money < c.upgradeCost ? 'disabled' : ''}
+                style="font-size:11px; padding:7px 8px">
+                Upgrade
+            </button>
+        </div>
     </div>`;
         
         const m = L.circleMarker([c.lat, c.lon], {
