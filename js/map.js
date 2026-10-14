@@ -89,15 +89,40 @@ export function updateMapMarkers() {
         const seasonBonus = getSeasonBonus(c.id);
         const hubBonus = (state.hubCity === c.id) ? '⭐ HUB +20%' : '';
         
-        const popup = `<b>${c.name}</b><br>
-            Slots: ${used}/${maxSlots}<br>
-            Level: ${c.level}<br>
-            Season: ${(seasonBonus*100).toFixed(0)}%<br>
-            ${hubBonus}<br>
-            <button class="btn btn-secondary" data-action="upgradeCity" data-id="${c.id}" ${state.money < c.upgradeCost ? 'disabled' : ''} 
-                    style="font-size:11px; padding:4px 8px; min-height:24px;">
-                Upgrade (€${c.upgradeCost.toLocaleString()})
-            </button>`;
+const isStart = Game.selectedStart?.id === c.id;
+const isEnd = Game.selectedEnd?.id === c.id;
+
+const popup = `
+    <div style="min-width:180px">
+        <b>${c.name}</b><br>
+        Slots: ${used}/${maxSlots}<br>
+        Level: ${c.level}<br>
+        Season: ${(seasonBonus * 100).toFixed(0)}%<br>
+        ${hubBonus ? `${hubBonus}<br>` : ''}
+        <hr style="margin:8px 0">
+
+        <button class="btn btn-primary"
+            onclick="window.selectMapCity('${c.id}')"
+            style="width:100%;font-size:12px;padding:6px;margin-bottom:5px">
+            ${isStart ? '✓ START' : 'Choose as START'}
+        </button>
+
+        ${isStart ? `
+            <button class="btn btn-secondary"
+                onclick="window.selectMapDestination()"
+                style="width:100%;font-size:12px;padding:6px;margin-bottom:5px">
+                Choose DESTINATION
+            </button>
+        ` : ''}
+
+        <button class="btn btn-secondary"
+            data-action="upgradeCity"
+            data-id="${c.id}"
+            ${state.money < c.upgradeCost ? 'disabled' : ''}
+            style="width:100%;font-size:11px;padding:5px">
+            Upgrade (€${c.upgradeCost.toLocaleString()})
+        </button>
+    </div>`;
         
         const m = L.circleMarker([c.lat, c.lon], {
             radius: 9,
@@ -192,31 +217,89 @@ export function resetMapColors() {
     }
 }
 
+export function selectMapCity(cityId) {
+    const city = Game.cities.find(c => String(c.id) === String(cityId));
+    if (!city) return;
+
+    Game.selectedStart = city;
+    Game.selectedEnd = null;
+
+    resetMapColors();
+
+    if (Game.markers[city.id]) {
+        Game.markers[city.id].setStyle({ fillColor: '#10b981' });
+    }
+
+    updateSelectionInfo();
+    updateProfitPreview();
+    updateHubButton();
+    updateMapMarkers();
+}
+
+export function selectMapDestination() {
+    if (!Game.selectedStart) {
+        showToast('Choose a START city first!', true);
+        return;
+    }
+
+    const startId = Game.selectedStart.id;
+    const marker = Game.markers[startId];
+
+    if (marker) {
+        marker.openPopup();
+    }
+
+    showToast('Now click another city to select DESTINATION.');
+}
+
+function updateSelectionInfo() {
+    const info = DOM.selectionInfo;
+    if (!info) return;
+
+    if (Game.selectedStart && Game.selectedEnd) {
+        info.innerHTML =
+            `📍 START: ${Game.selectedStart.name} → DESTINATION: ${Game.selectedEnd.name}<br>` +
+            `📏 ${getDistance(Game.selectedStart, Game.selectedEnd)} km<br>` +
+            `✅ Set price and CREATE`;
+    } else if (Game.selectedStart) {
+        info.innerHTML =
+            `📍 START: ${Game.selectedStart.name}<br>` +
+            `✨ Choose another city as DESTINATION`;
+    } else {
+        info.innerHTML = '✨ Choose a START city, then a DESTINATION';
+    }
+}
+
 export function onCityClick(city, marker) {
     if (!Game.selectedStart) {
-        Game.selectedStart = city;
-        resetMapColors();
-        marker.setStyle({ fillColor: '#10b981' });
-        const info = DOM.selectionInfo;
-        if (info) info.innerHTML = `📍 START: ${city.name}<br>✨ Click destination`;
-        updateProfitPreview();
-    } else if (!Game.selectedEnd && Game.selectedStart.id !== city.id) {
-        Game.selectedEnd = city;
-        marker.setStyle({ fillColor: '#ef4444' });
-        const info = DOM.selectionInfo;
-        if (info) {
-            info.innerHTML = `📍 ${Game.selectedStart.name} → ${city.name}<br>📏 ${getDistance(Game.selectedStart, city)}km<br>✅ Set price and CREATE`;
-        }
-        updateProfitPreview();
-    } else {
-        Game.selectedStart = city;
-        Game.selectedEnd = null;
-        resetMapColors();
-        marker.setStyle({ fillColor: '#10b981' });
-        const info = DOM.selectionInfo;
-        if (info) info.innerHTML = `📍 START: ${city.name}<br>✨ Click destination`;
-        updateProfitPreview();
+        // First city becomes START.
+        selectMapCity(city.id);
+        return;
     }
+
+    if (Game.selectedStart.id === city.id) {
+        // Clicking START again keeps it selected.
+        marker.openPopup();
+        return;
+    }
+
+    // A different city becomes DESTINATION.
+    Game.selectedEnd = city;
+
+    resetMapColors();
+
+    if (Game.markers[Game.selectedStart.id]) {
+        Game.markers[Game.selectedStart.id]
+            .setStyle({ fillColor: '#10b981' });
+    }
+
+    if (Game.markers[city.id]) {
+        Game.markers[city.id]
+            .setStyle({ fillColor: '#ef4444' });
+    }
+
+    updateSelectionInfo();
+    updateProfitPreview();
     updateHubButton();
 }
 
@@ -244,3 +327,6 @@ export function setHub() {
     saveGame();    
     refreshAll();
 }
+
+window.selectMapCity = selectMapCity;
+window.selectMapDestination = selectMapDestination;
