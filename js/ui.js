@@ -110,6 +110,30 @@ export function switchScreen(id) {
     if (id === 'achievements') renderAchievements();
     if (id === 'loans') renderLoans();
 
+
+    if (id === 'map') {
+        import('./map.js')
+            .then(module => {
+                module.initMap();
+
+                // Leaflet трябва да преизчисли размера,
+                // след като екранът стане видим.
+                requestAnimationFrame(() => {
+                    if (module && document.getElementById('map')) {
+                        setTimeout(() => {
+                            const mapElement = document.getElementById('map');
+                            if (mapElement && mapElement._leaflet_id) {
+                                window.dispatchEvent(new Event('resize'));
+                            }
+                        }, 100);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Map initialization failed:', error);
+            });
+    }
+
     if (id === 'leaderboard') {
         import('./main.js')
             .then(module => module.renderLeaderboard())
