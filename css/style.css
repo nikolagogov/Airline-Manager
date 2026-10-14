@@ -71,22 +71,12 @@ body.dark-mode {
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 
-
-/* ====== BODY & FULL-WIDTH GAME LAYOUT ====== */
-html {
-    min-height: 100%;
-}
-
+/* ====== BODY & FULL-WIDTH LAYOUT ====== */
 body {
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
+    min-height: 100vh;
     padding: 8px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
     transition: background 0.3s, color 0.3s;
 }
 
@@ -99,42 +89,29 @@ body.dark-mode {
     max-width: none;
     margin: 0;
     display: flex;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 12px;
-    flex: 1 1 0;
-    min-height: 0;
-    min-width: 0;
     flex-wrap: nowrap;
-    overflow: hidden;
 }
 
 .sidebar {
     background: var(--bg-primary);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
     padding: 12px;
     width: 240px;
     flex: 0 0 240px;
-    min-width: 0;
-    min-height: 0;
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
     box-shadow: 0 8px 20px var(--shadow-color);
+    height: fit-content;
     transition: background 0.3s, color 0.3s;
 }
 
 .main-content {
     flex: 1 1 0;
     min-width: 0;
-    min-height: 0;
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
     background: var(--bg-primary);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
     padding: 16px;
     box-shadow: 0 8px 20px var(--shadow-color);
-    overscroll-behavior: contain;
     transition: background 0.3s, color 0.3s;
 }
 
@@ -985,7 +962,6 @@ body.dark-mode .upgrade-panel {
     font-size: 13px;
 }
 
-
 /* ====== COMPACT DESKTOP DASHBOARD ====== */
 @media (min-width: 901px) {
     .overview-stats {
@@ -1014,63 +990,17 @@ body.dark-mode .upgrade-panel {
     .recent-routes {
         margin-top: 10px;
     }
-}
 
-/* ====== RESPONSIVE LAYOUT ====== */
-@media (max-width: 900px) {
-    body {
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
-        overflow-x: hidden;
-        overflow-y: auto;
-    }
-
+    @media (min-width: 901px) {
     .app {
-        flex: 0 0 auto;
-        min-height: 0;
-        flex-wrap: wrap;
-        overflow: visible;
+        min-height: calc(100vh - 16px);
+        align-items: stretch;
     }
 
     .sidebar {
-        width: 100%;
-        flex: 1 1 100%;
-        height: auto;
         max-height: none;
         overflow: visible;
-    }
-
-    .main-content {
-        width: 100%;
-        flex: 1 1 100%;
-        min-height: 60vh;
-        overflow: visible;
-    }
-}
-
-@media (max-width: 700px) {
-    body {
-        padding: 6px;
-    }
-
-    .auth-bar {
-        padding: 10px;
-    }
-
-    .main-content {
-        padding: 12px;
-    }
-
-    .sidebar,
-    .main-content {
-        border-radius: 16px;
-    }
-}
-
-@media (max-width: 900px) and (orientation: landscape) {
-    #map {
-        height: 250px;
+        align-self: stretch;
     }
 }
 
@@ -1103,4 +1033,187 @@ body.dark-mode .upgrade-panel {
     .main-content {
         padding: 12px;
     }
+}
+
+/* ====== AIRLINE MANAGER: OPERATIONS CENTER REDESIGN ====== */
+:root {
+    --am-navy: #0b2545;
+    --am-navy-2: #123b61;
+    --am-orange: #f59e0b;
+    --am-canvas: #eef3f8;
+    --am-radius: 16px;
+}
+html { width: 100%; min-height: 100%; }
+body {
+    width: 100%; height: 100vh; height: 100dvh; min-height: 0;
+    padding: 14px; display: flex; flex-direction: column; gap: 12px;
+    overflow: hidden; background: var(--am-canvas); color: var(--text-secondary);
+}
+body.dark-mode { background: #0b1220; }
+.auth-bar {
+    position: relative; z-index: 20; flex: 0 0 auto; margin: 0;
+    padding: 10px 18px; border: 1px solid var(--border-color);
+    border-radius: var(--am-radius); background: var(--bg-primary);
+    box-shadow: 0 3px 12px rgba(15,23,42,.045);
+}
+.auth-bar-content { min-height: 38px; flex-wrap: nowrap; }
+.auth-logo { color: var(--am-navy); letter-spacing: -.025em; }
+body.dark-mode .auth-logo { color: var(--text-primary); }
+.auth-user-info { justify-content: flex-end; }
+
+.app {
+    flex: 1 1 0; min-height: 0; min-width: 0; width: 100%; max-width: none;
+    margin: 0; display: flex; flex-direction: column; align-items: stretch;
+    gap: 12px; overflow: hidden;
+}
+.sidebar {
+    flex: 0 0 auto; width: 100%; min-width: 0; min-height: 0; height: auto;
+    padding: 12px 14px; display: grid;
+    grid-template-columns: minmax(170px,220px) minmax(0,1fr) auto;
+    grid-template-areas: "brand nav tools" "status status status";
+    align-items: center; column-gap: 18px; row-gap: 10px; overflow: visible;
+    border: 1px solid var(--border-color); border-radius: var(--am-radius);
+    background: var(--bg-primary); box-shadow: 0 3px 12px rgba(15,23,42,.045);
+}
+.logo { grid-area: brand; margin: 0; padding: 0; text-align: left; border: 0; }
+.logo h2 {
+    margin: 0; padding: 0; border: 0; font-size: 1.08rem;
+    line-height: 1.25; white-space: nowrap;
+}
+.logo p { margin-top: 3px; font-size: 10px; }
+.sidebar nav {
+    grid-area: nav; min-width: 0; display: flex; align-items: center;
+    gap: 6px; flex-wrap: wrap;
+}
+.sidebar .nav-btn {
+    width: auto; min-width: 0; min-height: 36px; margin: 0;
+    padding: 8px 12px; justify-content: center; gap: 6px;
+    border-radius: 10px; font-size: 12px; white-space: nowrap;
+}
+.sidebar .nav-btn:hover { transform: translateY(-1px); }
+.sidebar .nav-btn.active {
+    background: var(--am-navy); border-color: var(--am-navy); color: #fff;
+}
+.sidebar > .nav-btn {
+    grid-area: tools; width: auto; min-height: 34px; padding: 7px 10px;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 12px;
+}
+#soundToggle { grid-area: tools; justify-self: end; margin-right: 42px; width: 34px; padding: 6px; }
+#darkModeToggle { grid-area: tools; justify-self: end; width: 34px; padding: 6px; }
+.sidebar > .nav-btn[data-action="openBuyMenu"] {
+    grid-area: tools; justify-self: end; margin-right: 84px; padding-inline: 12px;
+}
+.stats-mini { grid-area: status; display: none; }
+#levelIndicator, #loanIndicator, #seasonIndicator { display: none !important; }
+.github-link { display: none; }
+.event-box { grid-area: status; margin: 0; }
+
+.main-content {
+    flex: 1 1 0; min-height: 0; min-width: 0; height: auto;
+    padding: clamp(18px,2vw,30px); overflow-x: hidden; overflow-y: auto;
+    overscroll-behavior: contain; border: 1px solid var(--border-color);
+    border-radius: var(--am-radius); background: var(--bg-primary);
+    box-shadow: 0 3px 12px rgba(15,23,42,.045); scrollbar-gutter: stable;
+}
+.screen { width: 100%; max-width: 1500px; margin-inline: auto; }
+.screen > h2 {
+    margin-bottom: 20px; font-size: clamp(1.15rem,1.5vw,1.45rem);
+    letter-spacing: -.025em;
+}
+.airline-name-container {
+    min-height: 64px; margin-bottom: 16px; padding: 14px 18px;
+    border: 1px solid var(--border-color); border-radius: 14px;
+}
+.airline-name-input { min-width: 0; }
+.overview-stats {
+    grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin-bottom: 16px;
+}
+.stat-card {
+    min-width: 0; padding: 18px 14px; border: 1px solid var(--border-color);
+    border-radius: 14px; text-align: left;
+}
+.stat-card > span { display: inline-block; margin-bottom: 8px; font-size: 18px; }
+.stat-card div:first-of-type {
+    font-size: clamp(19px,2vw,27px); line-height: 1.2; overflow-wrap: anywhere;
+}
+.stat-card div:last-child { margin-top: 4px; color: var(--text-muted); font-size: 12px; }
+.quick-actions, .how-to-play { border: 1px solid var(--border-color); border-radius: 14px; }
+.quick-actions { padding: 16px 18px; }
+.quick-actions h3, .recent-routes h3 { margin-top: 0; margin-bottom: 12px; }
+.quick-actions .flex-row { gap: 8px; }
+.quick-actions .btn { box-shadow: none; }
+.how-to-play { margin-top: 14px; padding: 14px 18px; line-height: 1.7; }
+.recent-routes { margin-top: 20px; }
+#recentRoutesList {
+    display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 10px;
+}
+.aircraft-card, .route-item, .achievement-card, .loan-card, .stat-box {
+    border-radius: 14px; box-shadow: none;
+}
+.aircraft-card:hover, .route-item:hover {
+    transform: translateY(-2px); box-shadow: 0 8px 18px var(--shadow-color);
+}
+.aircraft-list, .routes-list { max-height: min(58vh,680px); }
+#map { min-height: 320px; border: 1px solid var(--border-color); border-radius: 14px; }
+.map-controls { align-items: center; }
+.map-controls select { max-width: 100%; }
+.dialog { max-height: min(88vh,760px); overflow-y: auto; }
+
+@media (max-width: 1100px) {
+    body { padding: 10px; gap: 10px; }
+    .sidebar {
+        grid-template-columns: 1fr auto;
+        grid-template-areas: "brand tools" "nav nav"; gap: 10px 14px;
+    }
+    .sidebar nav { flex-wrap: wrap; }
+    .sidebar .nav-btn { flex: 0 0 auto; }
+    .sidebar > .nav-btn[data-action="openBuyMenu"] { margin-right: 84px; }
+    .overview-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 700px) {
+    body {
+        height: auto; min-height: 100vh; min-height: 100dvh; padding: 7px;
+        overflow-x: hidden; overflow-y: auto;
+    }
+    .auth-bar { padding: 10px 12px; }
+    .auth-bar-content { align-items: flex-start; flex-direction: column; }
+    .auth-user-info { width: 100%; justify-content: flex-start; }
+    .app { flex: 0 0 auto; min-height: 0; overflow: visible; }
+    .sidebar {
+        display: flex; flex-direction: column; align-items: stretch; gap: 12px;
+        padding: 12px; overflow: visible;
+    }
+    .logo { width: 100%; }
+    .sidebar nav {
+        display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
+        gap: 7px; width: 100%;
+    }
+    .sidebar .nav-btn {
+        width: 100%; min-height: 42px; padding: 9px 8px;
+        white-space: normal; font-size: 12px;
+    }
+    .sidebar > .nav-btn, #soundToggle, #darkModeToggle,
+    .sidebar > .nav-btn[data-action="openBuyMenu"] {
+        display: inline-flex; width: 100%; margin: 0; justify-self: auto;
+    }
+    .main-content {
+        flex: 0 0 auto; width: 100%; min-height: 60vh; padding: 14px; overflow: visible;
+    }
+    .overview-stats { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+    .stat-card { padding: 13px 11px; }
+    .stat-card div:first-of-type { font-size: 20px; }
+    .quick-actions { padding: 12px; }
+    .quick-actions .btn { flex: 1 1 calc(50% - 8px); }
+    .how-to-play { padding: 12px; font-size: 12px; }
+    .aircraft-list, .routes-list { max-height: none; overflow: visible; }
+    #map { height: 330px; min-height: 280px; }
+    .map-controls { align-items: stretch; }
+    .map-controls > * { max-width: 100%; }
+    .profile-menu { right: auto; left: 0; width: min(280px,calc(100vw - 36px)); }
+}
+@media (min-width: 701px) and (max-height: 650px) {
+    body { padding: 7px; gap: 7px; }
+    .sidebar { padding: 8px 10px; row-gap: 6px; }
+    .sidebar .nav-btn { min-height: 32px; padding-block: 6px; }
+    .main-content { padding: 16px 20px; }
 }
