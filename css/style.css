@@ -71,12 +71,22 @@ body.dark-mode {
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 
-/* ====== BODY & FULL-WIDTH LAYOUT ====== */
+
+/* ====== BODY & FULL-WIDTH GAME LAYOUT ====== */
+html {
+    min-height: 100%;
+}
+
 body {
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
     padding: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     transition: background 0.3s, color 0.3s;
 }
 
@@ -89,29 +99,42 @@ body.dark-mode {
     max-width: none;
     margin: 0;
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 12px;
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
     flex-wrap: nowrap;
+    overflow: hidden;
 }
 
 .sidebar {
     background: var(--bg-primary);
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     padding: 12px;
     width: 240px;
     flex: 0 0 240px;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     box-shadow: 0 8px 20px var(--shadow-color);
-    height: fit-content;
     transition: background 0.3s, color 0.3s;
 }
 
 .main-content {
     flex: 1 1 0;
     min-width: 0;
+    min-height: 0;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     background: var(--bg-primary);
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     padding: 16px;
     box-shadow: 0 8px 20px var(--shadow-color);
+    overscroll-behavior: contain;
     transition: background 0.3s, color 0.3s;
 }
 
@@ -962,6 +985,7 @@ body.dark-mode .upgrade-panel {
     font-size: 13px;
 }
 
+
 /* ====== COMPACT DESKTOP DASHBOARD ====== */
 @media (min-width: 901px) {
     .overview-stats {
@@ -990,17 +1014,63 @@ body.dark-mode .upgrade-panel {
     .recent-routes {
         margin-top: 10px;
     }
+}
 
-    @media (min-width: 901px) {
+/* ====== RESPONSIVE LAYOUT ====== */
+@media (max-width: 900px) {
+    body {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
     .app {
-        min-height: calc(100vh - 16px);
-        align-items: stretch;
+        flex: 0 0 auto;
+        min-height: 0;
+        flex-wrap: wrap;
+        overflow: visible;
     }
 
     .sidebar {
+        width: 100%;
+        flex: 1 1 100%;
+        height: auto;
         max-height: none;
         overflow: visible;
-        align-self: stretch;
+    }
+
+    .main-content {
+        width: 100%;
+        flex: 1 1 100%;
+        min-height: 60vh;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 700px) {
+    body {
+        padding: 6px;
+    }
+
+    .auth-bar {
+        padding: 10px;
+    }
+
+    .main-content {
+        padding: 12px;
+    }
+
+    .sidebar,
+    .main-content {
+        border-radius: 16px;
+    }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+    #map {
+        height: 250px;
     }
 }
 
