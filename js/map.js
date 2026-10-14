@@ -13,7 +13,6 @@ import {
     refreshAll
 } from './ui.js';
 import { DOM, showElement, hideElement } from './cache.js';
-import { checkAchievements } from './achievements.js';
 import { AudioSystem } from './audio.js';
 
 const L = window.L;
@@ -167,7 +166,6 @@ export function confirmUpgradeCity() {
         
         if (!state.anyUpgrade) {
             state.anyUpgrade = true;
-            checkAchievements();
         }
         
         Game.mapNeedsUpdate = true;
@@ -243,7 +241,6 @@ export function setHub() {
     Game.mapNeedsUpdate = true;
     updateMapMarkers();
     showToast(`⭐ ${Game.selectedStart.name} is now your hub! +20% demand.`);
-    saveGame();
-    checkAchievements();
+    saveGame();    
     refreshAll();
 }
