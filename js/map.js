@@ -40,7 +40,7 @@ export function initMap() {
         Game.map = window.L.map(mapContainer).setView([50, 10], 4);
 
         window.L.tileLayer(
-            'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
                 attribution: '&copy; OpenStreetMap contributors'
             }
