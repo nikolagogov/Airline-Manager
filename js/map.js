@@ -160,21 +160,18 @@ export function updateMapMarkers() {
                 ${hubBonus ? `${hubBonus}<br>` : ''}
 
                 <div style="display:flex; gap:6px; margin-top:10px; align-items:center">
-                    <button
-                        class="btn btn-primary"
-                        onclick="window.selectMapCity('${city.id}')"
-                        style="flex:1; font-size:12px; padding:7px 8px">
-                        ${selectLabel}
-                    </button>
 
-                    <button
-                        class="btn btn-secondary"
-                        data-action="upgradeCity"
-                        data-id="${city.id}"
-                        ${state.money < city.upgradeCost ? 'disabled' : ''}
-                        style="font-size:11px; padding:7px 8px">
-                        Upgrade
-                    </button>
+                <div style="margin-top:10px">
+                <button
+                    class="btn btn-secondary"
+                    data-action="upgradeCity"
+                    data-id="${city.id}"
+                    ${state.money < city.upgradeCost ? 'disabled' : ''}
+                    style="width:100%; font-size:11px; padding:7px 8px">
+                    Upgrade
+                </button>
+            </div>
+                    
                 </div>
             </div>
         `;
