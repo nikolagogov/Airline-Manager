@@ -76,6 +76,33 @@ export function getCityColor(type) {
 }
 
 export function updateMapMarkers() {
+let previewRouteLine = null;
+
+function updatePreviewRouteLine() {
+    if (!Game.map) return;
+
+    if (previewRouteLine) {
+        Game.map.removeLayer(previewRouteLine);
+        previewRouteLine = null;
+    }
+
+    if (!Game.selectedStart || !Game.selectedEnd) return;
+
+    previewRouteLine = L.polyline(
+        [
+            [Game.selectedStart.lat, Game.selectedStart.lon],
+            [Game.selectedEnd.lat, Game.selectedEnd.lon]
+        ],
+        {
+            color: '#ef4444',
+            weight: 4,
+            opacity: 0.9,
+            dashArray: '8, 8'
+        }
+    ).addTo(Game.map);
+
+    previewRouteLine.bringToFront();
+}
     if (!Game.map) return;
     const state = Game.state;
     
