@@ -88,7 +88,35 @@ export function updateMapMarkers() {
         const seasonBonus = getSeasonBonus(c.id);
         const hubBonus = (state.hubCity === c.id) ? '⭐ HUB +20%' : '';
         
-const isStart = Game.selectedStart?.id === c.id;
+let previewRouteLine = null;
+
+function updatePreviewRouteLine() {
+    if (!Game.map) return;
+
+    if (previewRouteLine) {
+        Game.map.removeLayer(previewRouteLine);
+        previewRouteLine = null;
+    }
+
+    if (!Game.selectedStart || !Game.selectedEnd) return;
+
+    previewRouteLine = L.polyline(
+        [
+            [Game.selectedStart.lat, Game.selectedStart.lon],
+            [Game.selectedEnd.lat, Game.selectedEnd.lon]
+        ],
+        {
+            color: '#ef4444',
+            weight: 4,
+            opacity: 0.9,
+            dashArray: '8, 8'
+        }
+    ).addTo(Game.map);
+
+    previewRouteLine.bringToFront();
+}
+
+    const isStart = Game.selectedStart?.id === c.id;
 const isEnd = Game.selectedEnd?.id === c.id;
 
 const popup = `
@@ -219,6 +247,7 @@ export function selectMapCity(cityId) {
     Game.selectedEnd = null;
 
     resetMapColors();
+    updatePreviewRouteLine();
 
     if (Game.markers[city.id]) {
         Game.markers[city.id].setStyle({ fillColor: '#10b981' });
@@ -228,6 +257,7 @@ export function selectMapCity(cityId) {
     updateProfitPreview();
     updateHubButton();
     updateMapMarkers();
+    updatePreviewRouteLine();
 }
 
 export function selectMapDestination() {
@@ -317,6 +347,7 @@ export function setHub() {
     state.hubSet = true;
     Game.mapNeedsUpdate = true;
     updateMapMarkers();
+    updatePreviewRouteLine();
     showToast(`⭐ ${Game.selectedStart.name} is now your hub! +20% demand.`);
     saveGame();    
     refreshAll();
