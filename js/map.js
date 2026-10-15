@@ -284,7 +284,6 @@ export function selectMapCity(cityId) {
     updateProfitPreview();
     updateHubButton();
     updateMapMarkers();
-    updatePreviewRouteLine();
 }
 
 export function selectMapDestination() {
