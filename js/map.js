@@ -1,4 +1,3 @@
-
 import { Game, saveGame } from './game.js';
 import {
     getCitySlotUsage,
@@ -89,9 +88,6 @@ export function updateMapMarkers() {
         const seasonBonus = getSeasonBonus(c.id);
         const hubBonus = (state.hubCity === c.id) ? '⭐ HUB +20%' : '';
         
-const isStart = Game.selectedStart?.id === c.id;
-const isEnd = Game.selectedEnd?.id === c.id;
-
 const isStart = Game.selectedStart?.id === c.id;
 const isEnd = Game.selectedEnd?.id === c.id;
 
