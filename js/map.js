@@ -1,4 +1,4 @@
-```js
+
 import { Game, saveGame } from './game.js';
 import {
     getCitySlotUsage,
@@ -116,7 +116,7 @@ export function updateMapMarkers() {
 
     const state = Game.state;
 
-    Object.values(Game.markers).forEach(marker => {
+    Object.values(Game.markers || {}).forEach(marker => {
         Game.map.removeLayer(marker);
     });
 
@@ -140,12 +140,16 @@ export function updateMapMarkers() {
             markerColor = '#ef4444';
         }
 
-        let selectionLabel;
+        let selectLabel;
 
-        if (!Game.selectedStart || isStart) {
-            selectionLabel = 'Choose as START';
+        if (isStart) {
+            selectLabel = '✓ START';
+        } else if (isEnd) {
+            selectLabel = '✓ DESTINATION';
+        } else if (!Game.selectedStart) {
+            selectLabel = 'Choose as START';
         } else {
-            selectionLabel = 'Choose as DESTINATION';
+            selectLabel = 'Choose as DESTINATION';
         }
 
         const popup = `
@@ -156,23 +160,12 @@ export function updateMapMarkers() {
                 Season: ${(seasonBonus * 100).toFixed(0)}%<br>
                 ${hubBonus ? `${hubBonus}<br>` : ''}
 
-                <div style="
-                    display:flex;
-                    gap:6px;
-                    margin-top:10px;
-                    align-items:center;
-                ">
+                <div style="display:flex; gap:6px; margin-top:10px; align-items:center">
                     <button
                         class="btn btn-primary"
                         onclick="window.selectMapCity('${city.id}')"
-                        style="
-                            flex:1;
-                            font-size:12px;
-                            padding:7px 8px;
-                        ">
-                        ${isStart ? '✓ START' :
-                            isEnd ? '✓ DESTINATION' :
-                            selectionLabel}
+                        style="flex:1; font-size:12px; padding:7px 8px">
+                        ${selectLabel}
                     </button>
 
                     <button
@@ -180,10 +173,7 @@ export function updateMapMarkers() {
                         data-action="upgradeCity"
                         data-id="${city.id}"
                         ${state.money < city.upgradeCost ? 'disabled' : ''}
-                        style="
-                            font-size:11px;
-                            padding:7px 8px;
-                        ">
+                        style="font-size:11px; padding:7px 8px">
                         Upgrade
                     </button>
                 </div>
@@ -222,6 +212,7 @@ export function upgradeCity(cityId) {
     if (!city) return;
 
     const currentUpgrade = state.cityUpgrades?.[cityId];
+
     const currentMaxSlots = currentUpgrade
         ? currentUpgrade.maxSlots
         : city.maxSlots;
@@ -283,7 +274,9 @@ export function confirmUpgradeCity() {
             level: (current.level || 0) + 1
         };
 
-        const city = Game.cities.find(c => String(c.id) === String(cityId));
+        const city = Game.cities.find(
+            c => String(c.id) === String(cityId)
+        );
 
         if (city) {
             city.level = (current.level || 0) + 2;
@@ -317,7 +310,9 @@ export function cancelUpgradeCity() {
 
 export function resetMapColors() {
     for (const id in Game.markers) {
-        const city = Game.cities.find(c => String(c.id) === String(id));
+        const city = Game.cities.find(
+            c => String(c.id) === String(id)
+        );
 
         if (!city) continue;
 
@@ -361,6 +356,13 @@ export function selectMapCity(cityId) {
     updateSelectionInfo();
     updateProfitPreview();
     updateHubButton();
+    updatePreviewRouteLine();
+
+    const selectedMarker = Game.markers[city.id];
+
+    if (selectedMarker) {
+        selectedMarker.openPopup();
+    }
 }
 
 // ==================== CITY CLICK ====================
@@ -376,11 +378,17 @@ export function onCityClick(city, marker) {
         Game.selectedEnd = city;
     }
 
-    resetMapColors();
-    updatePreviewRouteLine();
+    updateMapMarkers();
     updateSelectionInfo();
     updateProfitPreview();
     updateHubButton();
+    updatePreviewRouteLine();
+
+    const selectedMarker = Game.markers[city.id];
+
+    if (selectedMarker) {
+        selectedMarker.openPopup();
+    }
 }
 
 // ==================== SELECTION INFO ====================
@@ -422,6 +430,7 @@ export function clearMapSelection() {
     updateSelectionInfo();
     updateProfitPreview();
     updateHubButton();
+    updateMapMarkers();
 }
 
 // ==================== SET HUB ====================
@@ -439,6 +448,7 @@ export function setHub() {
     Game.mapNeedsUpdate = true;
 
     updateMapMarkers();
+    updatePreviewRouteLine();
 
     showToast(
         `⭐ ${Game.selectedStart.name} is now your hub! +20% demand.`
@@ -452,4 +462,3 @@ export function setHub() {
 
 window.selectMapCity = selectMapCity;
 window.selectMapDestination = selectMapDestination;
-```
