@@ -92,6 +92,9 @@ export function updateMapMarkers() {
 const isStart = Game.selectedStart?.id === c.id;
 const isEnd = Game.selectedEnd?.id === c.id;
 
+const isStart = Game.selectedStart?.id === c.id;
+const isEnd = Game.selectedEnd?.id === c.id;
+
 const popup = `
     <div style="min-width:180px">
         <b>${c.name}</b><br>
