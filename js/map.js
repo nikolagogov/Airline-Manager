@@ -48,37 +48,6 @@ function updatePreviewRouteLine() {
 
 // ==================== MAP ====================
 
-let previewRouteLine = null;
-
-function updatePreviewRouteLine() {
-    if (!window.map || !window.L) return;
-
-    const L = window.L;
-
-    if (previewRouteLine) {
-        window.map.removeLayer(previewRouteLine);
-        previewRouteLine = null;
-    }
-
-    const start = Game.selectedStart;
-    const end = Game.selectedEnd;
-
-    if (!start || !end) return;
-
-    previewRouteLine = L.polyline(
-        [
-            [start.lat, start.lng],
-            [end.lat, end.lng]
-        ],
-        {
-            color: '#f1c40f',
-            weight: 4,
-            opacity: 0.9,
-            dashArray: '8, 8'
-        }
-    ).addTo(window.map);
-}
-
 export function initMap() {
     const mapContainer = document.getElementById('map');
 
@@ -486,6 +455,15 @@ export function setHub() {
 
     saveGame();
     refreshAll();
+}
+
+export function selectMapDestination() {
+    if (!Game.selectedStart) {
+        showToast('Choose a START city first!', true);
+        return;
+    }
+
+    showToast('Now click another city to select DESTINATION.');
 }
 
 // ==================== GLOBAL HANDLERS ====================
