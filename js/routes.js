@@ -63,6 +63,7 @@ export async function createRouteFromMap() {
         aircraftName: ac.name,
         duration: Math.max(20, Math.floor((dist / ac.speed) * 3600)),
         active: false,
+        paused: false,
         endTime: null,
         priceMultiplier: Game.routePriceMultiplier,
         distance: dist,
@@ -86,6 +87,10 @@ export async function createRouteFromMap() {
 export function startFlight(rid) {
     const state = Game.state;
     const r = state.routes.find(r => r.id === rid);
+    if (r?.paused) {
+        showToast('Route is paused', true);
+        return;
+    }
     if (!r || r.active) {
         showToast('Route not found or active', true);
         return;
@@ -105,6 +110,41 @@ export function startFlight(rid) {
     startFlightTimer(r);
     AudioSystem.play('flight_start');
     showToast(`✈️ Flight departed!`);
+}
+
+
+export function toggleRoutePause(rid) {
+    const state = Game.state;
+    const route = state.routes.find(r => r.id === rid);
+
+    if (!route) {
+        showToast('Route not found', true);
+        return;
+    }
+
+    route.paused = !route.paused;
+
+    // Ако маршрутът е спрян и самолетът е на земята,
+    // той остава свободен.
+    if (route.paused && !route.active) {
+        const ac = state.aircrafts.find(
+            a => a.uniqueId === route.aircraftUniqueId
+        );
+        if (ac) ac.busy = false;
+    }
+
+    saveGame();
+    refreshAll();
+
+    showToast(
+        route.paused
+            ? '⏸ Route paused. Current flight will finish.'
+            : '▶ Route resumed.'
+    );
+
+    if (!route.paused && !route.active) {
+        startFlight(rid);
+    }
 }
 
 export function startFlightTimer(route) {
@@ -199,6 +239,24 @@ export async function completeFlight(rid) {
     AudioSystem.play('flight_complete');
     showToast(`✅ Completed! +€${profit.toLocaleString()}`);
     checkBankruptcy();
+
+    if (!r.paused && ac && !ac.busy && !ac.maintenance) {
+        setTimeout(() => {
+            const currentRoute = Game.state.routes.find(
+                route => route.id === rid
+            );
+    
+            if (
+                currentRoute &&
+                !currentRoute.paused &&
+                !currentRoute.active &&
+                !ac.busy &&
+                !ac.maintenance
+            ) {
+                startFlight(rid);
+            }
+        }, 1000);
+    }
 
     // Автоматично стартиране на следващия полет
     if (ac && !ac.busy && !ac.maintenance) {
@@ -342,6 +400,7 @@ export function autoStartAll() {
     const state = Game.state;
     let started = 0;
     for (let r of state.routes) {
+    if (r.paused) continue;
         const isExpired = r.endTime && r.endTime < Date.now();
         if (isExpired) {
             r.active = false;
@@ -403,8 +462,24 @@ export function renderRoutes() {
             </div>
             <div class="route-timer" id="timer-${r.id}">${timer}</div>
             <div>
-                <button class="btn" data-action="startFlight" data-id="${r.id}" ${btnDisabled ? 'disabled' : ''}>${btnText}</button>
-                <button class="btn btn-danger" data-action="removeRoute" data-id="${r.id}">🗑️</button>
+                <button class="btn"
+    data-action="startFlight"
+    data-id="${r.id}"
+    ${btnDisabled || r.paused ? 'disabled' : ''}>
+    ${btnText}
+</button>
+
+<button class="btn"
+    data-action="toggleRoutePause"
+    data-id="${r.id}">
+    ${r.paused ? '▶ RESUME' : '⏸ PAUSE'}
+</button>
+
+<button class="btn btn-danger"
+    data-action="removeRoute"
+    data-id="${r.id}">
+    🗑️
+</button>
             </div>
         </div>`;
     }).join('');
