@@ -153,7 +153,24 @@ export function computeFlightProfit(route, demand, fuelPrice) {
     const crewCost = Math.max(80, route.capacity * 0.65);
 
     let profit = revenue - fuelCost - airportFee - maintenanceCost - crewCost;
-    profit = profit * multiplier;
+
+console.table({
+    distance: dist,
+    demand,
+    occupancy: occ,
+    ticketPrice,
+    revenue: Math.round(revenue),
+    fuelCost: Math.round(fuelCost),
+    airportFee: Math.round(airportFee),
+    maintenanceCost: Math.round(maintenanceCost),
+    crewCost: Math.round(crewCost),
+    profitBeforeBonus: Math.round(profit),
+    fuelPrice,
+    priceMultiplier: route.priceMultiplier,
+    capacity: route.capacity
+});
+
+profit = profit * multiplier;
     
     if (dist > 4000) {
         const longHaulBonus = 1.15 + (route.capacity > 200 ? 0.15 : 0);
