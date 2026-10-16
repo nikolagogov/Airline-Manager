@@ -1,4 +1,3 @@
-
 import { Game, saveGame } from './game.js';
 import { DOM, updateText, updateHTML, showElement, hideElement } from './cache.js';
 import { aircraftDB, aircraftUpgrades, achievementsDB } from './data.js';
@@ -417,10 +416,15 @@ export async function updateProfitPreview() {
 }
 
 export function updateSliderInfo() {
+    const slider = document.getElementById('priceSlider');
     const lbl = DOM.priceMultLabel;
 
+    if (slider) {
+        Game.routePriceMultiplier = Number(slider.value);
+    }
+
     if (lbl) {
-        lbl.innerHTML = Game.routePriceMultiplier.toFixed(2) + 'x';
+        lbl.textContent = `${Game.routePriceMultiplier.toFixed(2)}x`;
     }
 
     updateProfitPreview();
