@@ -136,51 +136,87 @@ export function updateSingleTimer(rid) {
     }
 }
 
+
 export async function completeFlight(rid) {
     const state = Game.state;
-    const r = state.routes.find(r => r.id === rid);
+    const r = state.routes.find(route => route.id === rid);
     if (!r || !r.active) return;
-    
+
     const dKey = getDemandKey(r.from, r.to);
     const demand = state.routeDemand[dKey]?.demand || 1.0;
-    
-    // Изчисли occupancy веднъж и го използвай за всичко
-    const occ = calculateOccupancy(demand, r.priceMultiplier, r.capacity, r.from);
-    
-    // Изчисли печалбата с вече изчисленото occupancy
-    const profit = computeFlightProfitWithOccupancy(r, demand, state.fuelPrice, occ);
-    
-    // Обнови demand с изчисленото occupancy
+    const occ = calculateOccupancy(
+        demand,
+        r.priceMultiplier,
+        r.capacity,
+        r.from
+    );
+
+    let profit = computeFlightProfitWithOccupancy(
+        r,
+        demand,
+        state.fuelPrice,
+        occ
+    );
+
     updateDemand(dKey, occ);
-    
-    const ac = state.aircrafts.find(a => a.uniqueId === r.aircraftUniqueId);
+
+    const ac = state.aircrafts.find(
+        aircraft => aircraft.uniqueId === r.aircraftUniqueId
+    );
+
+    r.active = false;
+    r.endTime = null;
+
     if (ac) {
         ac.busy = false;
         ac.flightsCount = (ac.flightsCount || 0) + 1;
+
         if (ac.flightsCount >= 10 && !ac.maintenance) {
             ac.maintenance = true;
             ac.busy = true;
-            if (Game.maintenanceTimeout) clearTimeout(Game.maintenanceTimeout);
+
+            if (Game.maintenanceTimeout) {
+                clearTimeout(Game.maintenanceTimeout);
+            }
+
             Game.pendingMaintenance = ac;
             showMaintenanceDialog(ac);
         }
     }
-    
-    r.active = false;
+
     updateStatistics(r, profit);
-    
+
     if (state.loanActive && profit > 0) {
         profit = applyLoanRepayment(profit);
     }
-    
+
     state.money += profit;
     state.totalRevenue += profit;
+
     Game.mapNeedsUpdate = true;
     saveGame();
     refreshAll();
     AudioSystem.play('flight_complete');
     showToast(`✅ Completed! +€${profit.toLocaleString()}`);
     checkBankruptcy();
+
+    // Автоматично стартиране на следващия полет
+    if (ac && !ac.busy && !ac.maintenance) {
+        setTimeout(() => {
+            const currentRoute = Game.state.routes.find(
+                route => route.id === rid
+            );
+
+            if (
+                currentRoute &&
+                !currentRoute.active &&
+                !ac.busy &&
+                !ac.maintenance
+            ) {
+                startFlight(rid);
+            }
+        }, 1000);
+    }
 }
 
 // ==================== COMPUTE FLIGHT PROFIT WITH OCCUPANCY ====================
