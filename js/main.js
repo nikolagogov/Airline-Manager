@@ -232,17 +232,19 @@ function handleClick(e) {
                 Game.confirmResolve = null;
             }
             break;
-        case 'acceptBailout':
+               case 'acceptBailout':
             acceptBailout();
             break;
+
+        case 'toggleRoutePause':
+            import('./routes.js').then(
+                m => m.toggleRoutePause(parseInt(target.dataset.id, 10))
+            );
+            break;
+
         default:
             console.log('Action:', action);
     }
-    case 'toggleRoutePause':
-    import('./routes.js').then(
-        m => m.toggleRoutePause(parseInt(target.dataset.id))
-    );
-    break;
 }
 
 function handleChange(e) {
