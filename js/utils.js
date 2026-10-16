@@ -177,18 +177,18 @@ profit = profit * multiplier;
         profit = Math.floor(profit * longHaulBonus);
     }
 
-    console.log('PROFIT DEBUG', {
-        distance: dist,
-        demand,
-        occupancy: occ,
-        ticketPrice,
-        revenue,
-        fuelCost,
-        airportFee,
-        maintenanceCost,
-        crewCost,
-        profitBeforeClamp: profit
-    });
+    console.log('PROFIT DEBUG', JSON.stringify({
+    distance: dist,
+    demand,
+    occupancy: occ,
+    ticketPrice,
+    revenue,
+    fuelCost,
+    airportFee,
+    maintenanceCost,
+    crewCost,
+    profitBeforeClamp: profit
+}));
     
     return Math.floor(Math.max(0, profit));
 }
