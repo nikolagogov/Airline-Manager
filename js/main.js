@@ -238,6 +238,11 @@ function handleClick(e) {
         default:
             console.log('Action:', action);
     }
+    case 'toggleRoutePause':
+    import('./routes.js').then(
+        m => m.toggleRoutePause(parseInt(target.dataset.id))
+    );
+    break;
 }
 
 function handleChange(e) {
