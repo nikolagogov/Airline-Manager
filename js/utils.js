@@ -176,6 +176,19 @@ profit = profit * multiplier;
         const longHaulBonus = 1.15 + (route.capacity > 200 ? 0.15 : 0);
         profit = Math.floor(profit * longHaulBonus);
     }
+
+    console.log('PROFIT DEBUG', {
+        distance: dist,
+        demand,
+        occupancy: occ,
+        ticketPrice,
+        revenue,
+        fuelCost,
+        airportFee,
+        maintenanceCost,
+        crewCost,
+        profitBeforeClamp: profit
+    });
     
     return Math.floor(Math.max(0, profit));
 }
